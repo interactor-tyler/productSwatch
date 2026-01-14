@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Collection</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind:wght@300;400;500;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-primary: #7ebc59;
+            --color-primary-dark: #6aa648;
+            --color-primary-light: #9ed47a;
+            --color-white: #ffffff;
+            --color-off-white: #f9f9f9;
+            --color-light-gray: #f1f1f1;
+            --color-border: #dedede;
+            --color-mid-gray: #cccccc;
+            --color-text: #33363b;
+            --color-text-light: #3a3a3a;
+            --color-text-muted: #777777;
+            --color-dark: #1a1a1a;
+            --font-primary: 'Hind', sans-serif;
+            --font-secondary: 'Lato', sans-serif;
+            --transition-fast: 0.2s ease;
+            --transition-smooth: 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 14px;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background: var(--color-white);
+            color: var(--color-text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: var(--color-white);
+            border-bottom: 1px solid var(--color-border);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-title {
+            font-family: var(--font-secondary);
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--color-text);
+            letter-spacing: -0.01em;
+        }
+
+        .header-title span {
+            color: var(--color-primary);
+        }
+
+        .header-meta {
+            font-family: var(--font-secondary);
+            font-size: 0.85rem;
+            font-weight: 400;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Gallery Container */
+        .gallery-container {
+            padding: 2.5rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Gallery Grid */
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+        }
+
+        .image-card {
+            position: relative;
+            cursor: pointer;
+            background: var(--color-white);
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            overflow: hidden;
+            transition: border-color var(--transition-smooth), box-shadow var(--transition-smooth);
+        }
+
+        .image-card:hover {
+            border-color: var(--color-primary);
+            box-shadow: 0 4px 12px rgba(126, 188, 89, 0.15);
+        }
+
+        .image-wrapper {
+            position: relative;
+            overflow: hidden;
+            aspect-ratio: 1 / 1;
+            background: var(--color-light-gray);
+        }
+
+        .image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform var(--transition-smooth);
+        }
+
+        .image-card:hover .image-wrapper img {
+            transform: scale(1.05);
+        }
+
+        /* Quick view button */
+        .quick-view {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--color-primary);
+            color: var(--color-white);
+            font-family: var(--font-secondary);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 0.75rem;
+            text-align: center;
+            transform: translateY(100%);
+            transition: transform var(--transition-smooth);
+        }
+
+        .image-card:hover .quick-view {
+            transform: translateY(0);
+        }
+
+        /* Card meta */
+        .card-meta {
+            padding: 1rem;
+            background: var(--color-white);
+        }
+
+        .card-label {
+            font-family: var(--font-primary);
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--color-text);
+            display: block;
+            margin-bottom: 0.25rem;
+            transition: color var(--transition-fast);
+        }
+
+        .image-card:hover .card-label {
+            color: var(--color-primary);
+        }
+
+        .card-number {
+            font-family: var(--font-secondary);
+            font-size: 0.8rem;
+            font-weight: 400;
+            color: var(--color-text-muted);
+        }
+
+        /* ===================== LIGHTBOX ===================== */
+        .lightbox {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s;
+        }
+
+        .lightbox.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .lightbox-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(26, 26, 26, 0.95);
+        }
+
+        .lightbox-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            padding: 4rem;
+            pointer-events: none;
+        }
+
+        .lightbox-image-container {
+            position: relative;
+            max-width: 70vw;
+            max-height: 80vh;
+            transform: scale(0.95);
+            opacity: 0;
+            transition: all 0.3s ease 0.1s;
+            pointer-events: auto;
+            background: var(--color-white);
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .lightbox.active .lightbox-image-container {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .lightbox-image {
+            max-width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+            display: block;
+        }
+
+        /* Lightbox caption - top left */
+        .lightbox-caption {
+            position: absolute;
+            top: 1.5rem;
+            left: 2rem;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.25rem;
+        }
+
+        .lightbox-number {
+            font-family: var(--font-secondary);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--color-primary);
+            background: var(--color-white);
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+        }
+
+        .lightbox-title {
+            font-family: var(--font-primary);
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--color-white);
+            margin-top: 0.5rem;
+        }
+
+        /* Lightbox navigation */
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 50%;
+            background: var(--color-white);
+            color: var(--color-text);
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .lightbox-nav:hover {
+            background: var(--color-primary);
+            color: var(--color-white);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .lightbox-nav svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .lightbox-prev {
+            left: 2rem;
+        }
+
+        .lightbox-next {
+            right: 2rem;
+        }
+
+        /* Lightbox close */
+        .lightbox-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 10;
+            width: 44px;
+            height: 44px;
+            border: none;
+            border-radius: 50%;
+            background: var(--color-white);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .lightbox-close:hover {
+            background: var(--color-primary);
+            transform: rotate(90deg);
+        }
+
+        .lightbox-close svg {
+            width: 16px;
+            height: 16px;
+            stroke: var(--color-text);
+            stroke-width: 2;
+            transition: stroke var(--transition-fast);
+        }
+
+        .lightbox-close:hover svg {
+            stroke: var(--color-white);
+        }
+
+        /* Lightbox counter */
+        .lightbox-counter {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            gap: 0.5rem;
+            background: var(--color-white);
+            padding: 0.5rem 0.75rem;
+            border-radius: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .counter-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: none;
+            background: var(--color-border);
+            transition: all var(--transition-fast);
+            cursor: pointer;
+        }
+
+        .counter-dot.active {
+            background: var(--color-primary);
+            transform: scale(1.2);
+        }
+
+        .counter-dot:hover:not(.active) {
+            background: var(--color-mid-gray);
+        }
+
+        /* Footer */
+        .footer {
+            padding: 1.5rem 2rem;
+            border-top: 1px solid var(--color-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--color-off-white);
+        }
+
+        .footer-hint {
+            font-family: var(--font-secondary);
+            font-size: 0.8rem;
+            font-weight: 400;
+            color: var(--color-text-muted);
+        }
+
+        .footer-hint span {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            font-size: 0.7rem;
+            margin: 0 0.15rem;
+            vertical-align: middle;
+            background: var(--color-white);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .gallery {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem 1.5rem;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.25rem;
+            }
+
+            .header-title {
+                font-size: 1.5rem;
+            }
+
+            .gallery-container {
+                padding: 1.5rem;
+            }
+
+            .gallery {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+
+            .lightbox-content {
+                padding: 1rem;
+            }
+
+            .lightbox-image-container {
+                max-width: 95vw;
+            }
+
+            .lightbox-nav {
+                width: 40px;
+                height: 40px;
+            }
+
+            .lightbox-prev {
+                left: 1rem;
+            }
+
+            .lightbox-next {
+                right: 1rem;
+            }
+
+            .lightbox-caption {
+                top: 1rem;
+                left: 1rem;
+            }
+
+            .footer {
+                padding: 1rem 1.5rem;
+                flex-direction: column;
+                gap: 0.5rem;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .gallery {
+                grid-template-columns: 1fr;
+            }
+
+            .lightbox-nav {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1 class="header-title">Product <span>Collection</span></h1>
+        <p class="header-meta">3 Items</p>
+    </header>
+
+    <main class="gallery-container">
+        <div class="gallery">
+            <article class="image-card" data-index="0">
+                <div class="image-wrapper">
+                    <img src="productImgs/image1.jpg" alt="Product 1" loading="lazy">
+                    <span class="quick-view">Quick View</span>
+                </div>
+                <div class="card-meta">
+                    <span class="card-label">Product One</span>
+                    <span class="card-number">SKU: PRD-001</span>
+                </div>
+            </article>
+
+            <article class="image-card" data-index="1">
+                <div class="image-wrapper">
+                    <img src="productImgs/image2.jpg" alt="Product 2" loading="lazy">
+                    <span class="quick-view">Quick View</span>
+                </div>
+                <div class="card-meta">
+                    <span class="card-label">Product Two</span>
+                    <span class="card-number">SKU: PRD-002</span>
+                </div>
+            </article>
+
+            <article class="image-card" data-index="2">
+                <div class="image-wrapper">
+                    <img src="productImgs/image3.jpg" alt="Product 3" loading="lazy">
+                    <span class="quick-view">Quick View</span>
+                </div>
+                <div class="card-meta">
+                    <span class="card-label">Product Three</span>
+                    <span class="card-number">SKU: PRD-003</span>
+                </div>
+            </article>
+
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p class="footer-hint">Click to enlarge</p>
+        <p class="footer-hint">Navigate: <span>&larr;</span> <span>&rarr;</span> or swipe</p>
+    </footer>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-backdrop"></div>
+        <div class="lightbox-content">
+            <div class="lightbox-image-container">
+                <img class="lightbox-image" id="lightbox-image" src="" alt="">
+            </div>
+        </div>
+
+        <div class="lightbox-caption">
+            <span class="lightbox-number" id="lightbox-number">01 / 03</span>
+            <span class="lightbox-title" id="lightbox-title">Product One</span>
+        </div>
+
+        <button class="lightbox-nav lightbox-prev" aria-label="Previous image">
+            <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <button class="lightbox-nav lightbox-next" aria-label="Next image">
+            <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+
+        <button class="lightbox-close" aria-label="Close lightbox">
+            <svg viewBox="0 0 24 24">
+                <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+        </button>
+
+        <div class="lightbox-counter" id="lightbox-counter"></div>
+    </div>
+
+    <script>
+        const images = [
+            { src: 'productImgs/image1.jpg', number: '01', title: 'Product One' },
+            { src: 'productImgs/image2.jpg', number: '02', title: 'Product Two' },
+            { src: 'productImgs/image3.jpg', number: '03', title: 'Product Three' }
+        ];
+
+        let currentIndex = 0;
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImage = document.getElementById('lightbox-image');
+        const lightboxNumber = document.getElementById('lightbox-number');
+        const lightboxTitle = document.getElementById('lightbox-title');
+        const lightboxCounter = document.getElementById('lightbox-counter');
+
+        // Create counter dots
+        images.forEach((_, i) => {
+            const dot = document.createElement('div');
+            dot.className = 'counter-dot' + (i === 0 ? ' active' : '');
+            dot.addEventListener('click', () => goToImage(i));
+            lightboxCounter.appendChild(dot);
+        });
+
+        // Open lightbox
+        document.querySelectorAll('.image-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const index = parseInt(card.dataset.index);
+                openLightbox(index);
+            });
+        });
+
+        function openLightbox(index) {
+            currentIndex = index;
+            updateLightbox();
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function updateLightbox() {
+            const img = images[currentIndex];
+            lightboxImage.src = img.src;
+            lightboxImage.alt = img.title;
+            lightboxNumber.textContent = `${img.number} / 0${images.length}`;
+            lightboxTitle.textContent = img.title;
+
+            // Update counter dots
+            document.querySelectorAll('.counter-dot').forEach((dot, i) => {
+                dot.classList.toggle('active', i === currentIndex);
+            });
+        }
+
+        function navigate(direction) {
+            currentIndex += direction;
+            if (currentIndex < 0) currentIndex = images.length - 1;
+            if (currentIndex >= images.length) currentIndex = 0;
+            updateLightbox();
+        }
+
+        function goToImage(index) {
+            currentIndex = index;
+            updateLightbox();
+        }
+
+        // Event listeners
+        document.querySelector('.lightbox-close').addEventListener('click', closeLightbox);
+        document.querySelector('.lightbox-prev').addEventListener('click', () => navigate(-1));
+        document.querySelector('.lightbox-next').addEventListener('click', () => navigate(1));
+        document.querySelector('.lightbox-backdrop').addEventListener('click', closeLightbox);
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (!lightbox.classList.contains('active')) return;
+
+            switch (e.key) {
+                case 'Escape':
+                    closeLightbox();
+                    break;
+                case 'ArrowLeft':
+                    navigate(-1);
+                    break;
+                case 'ArrowRight':
+                    navigate(1);
+                    break;
+            }
+        });
+
+        // Touch/swipe gestures
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchEndX = 0;
+        let touchEndY = 0;
+        const minSwipeDistance = 50;
+
+        lightbox.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
+        }, { passive: true });
+
+        lightbox.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            touchEndY = e.changedTouches[0].screenY;
+            handleSwipe();
+        }, { passive: true });
+
+        function handleSwipe() {
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
+
+            // Only handle horizontal swipes
+            if (Math.abs(deltaX) < minSwipeDistance) return;
+            if (Math.abs(deltaY) > Math.abs(deltaX)) return;
+
+            if (deltaX > 0) {
+                navigate(-1); // Swipe right = previous
+            } else {
+                navigate(1); // Swipe left = next
+            }
+        }
+    </script>
+</body>
+</html>
