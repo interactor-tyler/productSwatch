@@ -29,3 +29,29 @@ jobs:
           else
             echo "No large files found."
           fi
+
+  commitlint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install commitlint
+        run: npm install -g @commitlint/cli @commitlint/config-conventional
+
+      - name: Validate PR commits
+        run: |
+          echo "Validating commits follow conventional format..."
+          echo "Valid prefixes: feat, fix, docs, style, refactor, perf, test, chore"
+          npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
+        env:
+          COMMITLINT_CONFIG: |
+            module.exports = { extends: ['@commitlint/config-conventional'] }
