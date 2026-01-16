@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Collection</title>
+    <title>Product Swatch Demo</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hind:wght@300;400;500;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
@@ -51,8 +51,10 @@
             border-bottom: 1px solid var(--color-border);
             padding: 1.5rem 2rem;
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
+            flex-direction: column;
+            gap: 0.25rem;
             position: sticky;
             top: 0;
             z-index: 100;
@@ -79,20 +81,16 @@
             letter-spacing: 0.05em;
         }
 
-        /* Gallery Container */
+        /* Gallery Container - Centered Single Product */
         .gallery-container {
             padding: 2.5rem 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: calc(100vh - 200px);
         }
 
-        /* Gallery Grid */
-        .gallery {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1.5rem;
-        }
-
+        /* Single Product Card */
         .image-card {
             position: relative;
             cursor: pointer;
@@ -101,6 +99,8 @@
             border-radius: 4px;
             overflow: hidden;
             transition: border-color var(--transition-smooth), box-shadow var(--transition-smooth);
+            width: 100%;
+            max-width: 400px;
         }
 
         .image-card:hover {
@@ -153,11 +153,12 @@
         .card-meta {
             padding: 1rem;
             background: var(--color-white);
+            text-align: center;
         }
 
         .card-label {
             font-family: var(--font-primary);
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: 500;
             color: var(--color-text);
             display: block;
@@ -187,8 +188,8 @@
         }
 
         .swatch {
-            width: 24px;
-            height: 24px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             border: 2px solid transparent;
             cursor: pointer;
@@ -245,7 +246,7 @@
         /* Selected color label */
         .selected-color {
             font-family: var(--font-secondary);
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -332,7 +333,7 @@
             gap: 0.25rem;
         }
 
-        .lightbox-number {
+        .lightbox-color {
             font-family: var(--font-secondary);
             font-size: 0.75rem;
             font-weight: 700;
@@ -350,49 +351,6 @@
             font-weight: 500;
             color: var(--color-white);
             margin-top: 0.5rem;
-        }
-
-        /* Lightbox navigation */
-        .lightbox-nav {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            z-index: 10;
-            width: 50px;
-            height: 50px;
-            border: none;
-            border-radius: 50%;
-            background: var(--color-white);
-            color: var(--color-text);
-            font-size: 1.25rem;
-            cursor: pointer;
-            transition: all var(--transition-fast);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        }
-
-        .lightbox-nav:hover {
-            background: var(--color-primary);
-            color: var(--color-white);
-            transform: translateY(-50%) scale(1.1);
-        }
-
-        .lightbox-nav svg {
-            width: 20px;
-            height: 20px;
-            stroke: currentColor;
-            stroke-width: 2;
-            fill: none;
-        }
-
-        .lightbox-prev {
-            left: 2rem;
-        }
-
-        .lightbox-next {
-            right: 2rem;
         }
 
         /* Lightbox close */
@@ -431,46 +389,12 @@
             stroke: var(--color-white);
         }
 
-        /* Lightbox counter */
-        .lightbox-counter {
-            position: absolute;
-            bottom: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-            display: flex;
-            gap: 0.5rem;
-            background: var(--color-white);
-            padding: 0.5rem 0.75rem;
-            border-radius: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        }
-
-        .counter-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            border: none;
-            background: var(--color-border);
-            transition: all var(--transition-fast);
-            cursor: pointer;
-        }
-
-        .counter-dot.active {
-            background: var(--color-primary);
-            transform: scale(1.2);
-        }
-
-        .counter-dot:hover:not(.active) {
-            background: var(--color-mid-gray);
-        }
-
         /* Footer */
         .footer {
             padding: 1.5rem 2rem;
             border-top: 1px solid var(--color-border);
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
             background: var(--color-off-white);
         }
@@ -482,33 +406,10 @@
             color: var(--color-text-muted);
         }
 
-        .footer-hint span {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 22px;
-            height: 22px;
-            border: 1px solid var(--color-border);
-            border-radius: 4px;
-            font-size: 0.7rem;
-            margin: 0 0.15rem;
-            vertical-align: middle;
-            background: var(--color-white);
-        }
-
         /* Responsive */
-        @media (max-width: 1024px) {
-            .gallery {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-
         @media (max-width: 768px) {
             .header {
                 padding: 1rem 1.5rem;
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.25rem;
             }
 
             .header-title {
@@ -519,9 +420,8 @@
                 padding: 1.5rem;
             }
 
-            .gallery {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 1rem;
+            .image-card {
+                max-width: 100%;
             }
 
             .lightbox-content {
@@ -532,19 +432,6 @@
                 max-width: 95vw;
             }
 
-            .lightbox-nav {
-                width: 40px;
-                height: 40px;
-            }
-
-            .lightbox-prev {
-                left: 1rem;
-            }
-
-            .lightbox-next {
-                right: 1rem;
-            }
-
             .lightbox-caption {
                 top: 1rem;
                 left: 1rem;
@@ -552,106 +439,45 @@
 
             .footer {
                 padding: 1rem 1.5rem;
-                flex-direction: column;
-                gap: 0.5rem;
-                text-align: center;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .gallery {
-                grid-template-columns: 1fr;
-            }
-
-            .lightbox-nav {
-                display: none;
             }
         }
     </style>
 </head>
 <body>
     <header class="header">
-        <h1 class="header-title">Product <span>Collection</span></h1>
-        <p class="header-meta">3 Items</p>
+        <h1 class="header-title">Product <span>Swatch</span></h1>
+        <p class="header-meta">Color Selector Demo</p>
     </header>
 
     <main class="gallery-container">
-        <div class="gallery">
-            <article class="image-card" data-index="0" data-product="1">
-                <div class="image-wrapper">
-                    <img src="productImgs/image1.jpg" alt="Product 1" loading="lazy" data-base-src="productImgs/image1">
-                    <span class="quick-view">Quick View</span>
-                </div>
-                <div class="card-meta">
-                    <span class="card-label">Product One</span>
-                    <span class="card-number">SKU: PRD-001</span>
-                </div>
-                <div class="color-swatches">
-                    <button class="swatch active" data-color="black" style="background: #1a1a1a" title="Black"></button>
-                    <button class="swatch" data-color="white" style="background: #ffffff" title="White"></button>
-                    <button class="swatch" data-color="red" style="background: #e53935" title="Red"></button>
-                    <button class="swatch" data-color="blue" style="background: #1e88e5" title="Blue"></button>
-                    <button class="swatch" data-color="green" style="background: #43a047" title="Green"></button>
-                    <button class="swatch" data-color="yellow" style="background: #fdd835" title="Yellow"></button>
-                    <button class="swatch" data-color="orange" style="background: #fb8c00" title="Orange"></button>
-                    <button class="swatch" data-color="purple" style="background: #8e24aa" title="Purple"></button>
-                    <button class="swatch" data-color="pink" style="background: #d81b60" title="Pink"></button>
-                </div>
-                <div class="selected-color">Color: <span>Black</span></div>
-            </article>
-
-            <article class="image-card" data-index="1" data-product="2">
-                <div class="image-wrapper">
-                    <img src="productImgs/image2.jpg" alt="Product 2" loading="lazy" data-base-src="productImgs/image2">
-                    <span class="quick-view">Quick View</span>
-                </div>
-                <div class="card-meta">
-                    <span class="card-label">Product Two</span>
-                    <span class="card-number">SKU: PRD-002</span>
-                </div>
-                <div class="color-swatches">
-                    <button class="swatch active" data-color="black" style="background: #1a1a1a" title="Black"></button>
-                    <button class="swatch" data-color="white" style="background: #ffffff" title="White"></button>
-                    <button class="swatch" data-color="red" style="background: #e53935" title="Red"></button>
-                    <button class="swatch" data-color="blue" style="background: #1e88e5" title="Blue"></button>
-                    <button class="swatch" data-color="green" style="background: #43a047" title="Green"></button>
-                    <button class="swatch" data-color="yellow" style="background: #fdd835" title="Yellow"></button>
-                    <button class="swatch" data-color="orange" style="background: #fb8c00" title="Orange"></button>
-                    <button class="swatch" data-color="purple" style="background: #8e24aa" title="Purple"></button>
-                    <button class="swatch" data-color="pink" style="background: #d81b60" title="Pink"></button>
-                </div>
-                <div class="selected-color">Color: <span>Black</span></div>
-            </article>
-
-            <article class="image-card" data-index="2" data-product="3">
-                <div class="image-wrapper">
-                    <img src="productImgs/image3.jpg" alt="Product 3" loading="lazy" data-base-src="productImgs/image3">
-                    <span class="quick-view">Quick View</span>
-                </div>
-                <div class="card-meta">
-                    <span class="card-label">Product Three</span>
-                    <span class="card-number">SKU: PRD-003</span>
-                </div>
-                <div class="color-swatches">
-                    <button class="swatch active" data-color="black" style="background: #1a1a1a" title="Black"></button>
-                    <button class="swatch" data-color="white" style="background: #ffffff" title="White"></button>
-                    <button class="swatch" data-color="red" style="background: #e53935" title="Red"></button>
-                    <button class="swatch" data-color="blue" style="background: #1e88e5" title="Blue"></button>
-                    <button class="swatch" data-color="green" style="background: #43a047" title="Green"></button>
-                    <button class="swatch" data-color="yellow" style="background: #fdd835" title="Yellow"></button>
-                    <button class="swatch" data-color="orange" style="background: #fb8c00" title="Orange"></button>
-                    <button class="swatch" data-color="purple" style="background: #8e24aa" title="Purple"></button>
-                    <button class="swatch" data-color="pink" style="background: #d81b60" title="Pink"></button>
-                </div>
-                <div class="selected-color">Color: <span>Black</span></div>
-            </article>
-
-        </div>
+        <article class="image-card" data-index="0" data-product="1">
+            <div class="image-wrapper">
+                <img src="productImgs/BLACK_-_OW_1.jpg" alt="One-Wrap Cable Tie" loading="lazy">
+                <span class="quick-view">Quick View</span>
+            </div>
+            <div class="card-meta">
+                <span class="card-label">One-Wrap Cable Tie</span>
+                <span class="card-number">SKU: OW-001</span>
+            </div>
+            <div class="color-swatches">
+                <!-- Real image colors -->
+                <button class="swatch active" data-color="black" style="background: #1a1a1a" title="Black"></button>
+                <button class="swatch" data-color="blue" style="background: #2563eb" title="Blue"></button>
+                <button class="swatch" data-color="green" style="background: #16a34a" title="Green"></button>
+                <button class="swatch" data-color="orange" style="background: #ea580c" title="Orange"></button>
+                <button class="swatch" data-color="yellow" style="background: #eab308" title="Yellow"></button>
+                <!-- Placeholder colors -->
+                <button class="swatch" data-color="white" style="background: #ffffff" title="White"></button>
+                <button class="swatch" data-color="red" style="background: #dc2626" title="Red"></button>
+                <button class="swatch" data-color="purple" style="background: #9333ea" title="Purple"></button>
+                <button class="swatch" data-color="pink" style="background: #ec4899" title="Pink"></button>
+            </div>
+            <div class="selected-color">Color: <span>Black</span></div>
+        </article>
     </main>
 
     <footer class="footer">
-        <p class="footer-hint">Click to enlarge</p>
-        <p class="footer-hint">Navigate: <span>&larr;</span> <span>&rarr;</span> or swipe</p>
+        <p class="footer-hint">Click image to enlarge</p>
     </footer>
 
     <!-- Lightbox -->
@@ -659,135 +485,97 @@
         <div class="lightbox-backdrop"></div>
         <div class="lightbox-content">
             <div class="lightbox-image-container">
-                <img class="lightbox-image" id="lightbox-image" src="productImgs/image1.jpg" alt="Product">
+                <img class="lightbox-image" id="lightbox-image" src="productImgs/BLACK_-_OW_1.jpg" alt="Product">
             </div>
         </div>
 
         <div class="lightbox-caption">
-            <span class="lightbox-number" id="lightbox-number">01 / 03</span>
-            <span class="lightbox-title" id="lightbox-title">Product One</span>
+            <span class="lightbox-color" id="lightbox-color">Black</span>
+            <span class="lightbox-title" id="lightbox-title">One-Wrap Cable Tie</span>
         </div>
-
-        <button class="lightbox-nav lightbox-prev" aria-label="Previous image">
-            <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
-        </button>
-        <button class="lightbox-nav lightbox-next" aria-label="Next image">
-            <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
-        </button>
 
         <button class="lightbox-close" aria-label="Close lightbox">
             <svg viewBox="0 0 24 24">
                 <path d="M18 6L6 18M6 6l12 12"/>
             </svg>
         </button>
-
-        <div class="lightbox-counter" id="lightbox-counter"></div>
     </div>
 
     <script>
-        // Color configuration with hex codes and contrasting text colors
-        // When real images are ready, set USE_REAL_IMAGES to true
-        const USE_REAL_IMAGES = false;
+        // Colors with real images (from productImgs directory)
+        const REAL_IMAGE_COLORS = ['black', 'blue', 'green', 'orange', 'yellow'];
 
+        // Color configuration
         const colorConfig = {
-            black:  { name: 'Black',  bg: '1a1a1a', text: 'ffffff' },
+            // Real image colors
+            black:  { name: 'Black',  image: 'productImgs/BLACK_-_OW_1.jpg' },
+            blue:   { name: 'Blue',   image: 'productImgs/BLUE_-_OW_1.jpg' },
+            green:  { name: 'Green',  image: 'productImgs/GREEN_-_OW_1.jpg' },
+            orange: { name: 'Orange', image: 'productImgs/ORANGE_-_OW_1.jpg' },
+            yellow: { name: 'Yellow', image: 'productImgs/YELLOW_-_OW_1.jpg' },
+            // Placeholder colors
             white:  { name: 'White',  bg: 'ffffff', text: '1a1a1a' },
-            red:    { name: 'Red',    bg: 'e53935', text: 'ffffff' },
-            blue:   { name: 'Blue',   bg: '1e88e5', text: 'ffffff' },
-            green:  { name: 'Green',  bg: '43a047', text: 'ffffff' },
-            yellow: { name: 'Yellow', bg: 'fdd835', text: '1a1a1a' },
-            orange: { name: 'Orange', bg: 'fb8c00', text: 'ffffff' },
-            purple: { name: 'Purple', bg: '8e24aa', text: 'ffffff' },
-            pink:   { name: 'Pink',   bg: 'd81b60', text: 'ffffff' }
-        };
-
-        // Track selected color per product
-        const productColors = {
-            1: 'black',
-            2: 'black',
-            3: 'black'
+            red:    { name: 'Red',    bg: 'dc2626', text: 'ffffff' },
+            purple: { name: 'Purple', bg: '9333ea', text: 'ffffff' },
+            pink:   { name: 'Pink',   bg: 'ec4899', text: 'ffffff' }
         };
 
         // Product data
-        const products = [
-            { baseSrc: 'productImgs/image1', number: '01', title: 'Product One' },
-            { baseSrc: 'productImgs/image2', number: '02', title: 'Product Two' },
-            { baseSrc: 'productImgs/image3', number: '03', title: 'Product Three' }
-        ];
+        const product = {
+            title: 'One-Wrap Cable Tie',
+            sku: 'OW-001'
+        };
 
-        // Get image src for a product with selected color
-        function getImageSrc(productIndex) {
-            const product = products[productIndex];
-            const colorKey = productColors[productIndex + 1];
+        // Current selected color
+        let selectedColor = 'black';
+
+        // Get image src for selected color
+        function getImageSrc(colorKey) {
             const color = colorConfig[colorKey];
 
-            // Black always uses real product images
-            if (colorKey === 'black') {
-                return `${product.baseSrc}.jpg`;
+            // Check if this color has a real image
+            if (REAL_IMAGE_COLORS.includes(colorKey)) {
+                return color.image;
             }
 
-            if (USE_REAL_IMAGES) {
-                // Use real image files when available
-                return `${product.baseSrc}-${colorKey}.jpg`;
-            } else {
-                // Use placehold.co with color and product name
-                const text = encodeURIComponent(`${product.title}\n${color.name}`);
-                return `https://placehold.co/600x600/${color.bg}/${color.text}?text=${text}`;
-            }
+            // Use placehold.co for placeholder colors
+            const text = encodeURIComponent(`${product.title}\n${color.name}`);
+            return `https://placehold.co/600x600/${color.bg}/${color.text}?text=${text}`;
         }
 
-        let currentIndex = 0;
         const lightbox = document.getElementById('lightbox');
         const lightboxImage = document.getElementById('lightbox-image');
-        const lightboxNumber = document.getElementById('lightbox-number');
+        const lightboxColor = document.getElementById('lightbox-color');
         const lightboxTitle = document.getElementById('lightbox-title');
-        const lightboxCounter = document.getElementById('lightbox-counter');
-
-        // Create counter dots
-        products.forEach((_, i) => {
-            const dot = document.createElement('div');
-            dot.className = 'counter-dot' + (i === 0 ? ' active' : '');
-            dot.addEventListener('click', () => goToImage(i));
-            lightboxCounter.appendChild(dot);
-        });
+        const productImage = document.querySelector('.image-wrapper img');
+        const colorLabel = document.querySelector('.selected-color span');
 
         // Color swatch click handler
         document.querySelectorAll('.swatch').forEach(swatch => {
             swatch.addEventListener('click', (e) => {
-                e.stopPropagation(); // Prevent card click (lightbox open)
+                e.stopPropagation();
 
-                const card = swatch.closest('.image-card');
-                const productId = parseInt(card.dataset.product);
-                const color = swatch.dataset.color;
+                const colorKey = swatch.dataset.color;
+                selectedColor = colorKey;
 
                 // Update active swatch
-                card.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+                document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
                 swatch.classList.add('active');
 
                 // Update selected color label
-                const colorLabel = card.querySelector('.selected-color span');
-                colorLabel.textContent = colorConfig[color].name;
-
-                // Store selected color
-                productColors[productId] = color;
+                colorLabel.textContent = colorConfig[colorKey].name;
 
                 // Update product image
-                const img = card.querySelector('.image-wrapper img');
-                img.src = getImageSrc(productId - 1);
+                productImage.src = getImageSrc(colorKey);
             });
         });
 
-        // Open lightbox (only when clicking image area, not swatches)
-        document.querySelectorAll('.image-card').forEach(card => {
-            const imageWrapper = card.querySelector('.image-wrapper');
-            imageWrapper.addEventListener('click', () => {
-                const index = parseInt(card.dataset.index);
-                openLightbox(index);
-            });
+        // Open lightbox
+        document.querySelector('.image-wrapper').addEventListener('click', () => {
+            openLightbox();
         });
 
-        function openLightbox(index) {
-            currentIndex = index;
+        function openLightbox() {
             updateLightbox();
             lightbox.classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -799,101 +587,22 @@
         }
 
         function updateLightbox() {
-            const product = products[currentIndex];
-            const colorKey = productColors[currentIndex + 1];
-            const colorName = colorConfig[colorKey].name;
-
-            lightboxImage.src = getImageSrc(currentIndex);
+            const colorName = colorConfig[selectedColor].name;
+            lightboxImage.src = getImageSrc(selectedColor);
             lightboxImage.alt = `${product.title} - ${colorName}`;
-            lightboxNumber.textContent = `${product.number} / 0${products.length}`;
-            lightboxTitle.textContent = `${product.title} - ${colorName}`;
-
-            // Update counter dots
-            document.querySelectorAll('.counter-dot').forEach((dot, i) => {
-                dot.classList.toggle('active', i === currentIndex);
-            });
-        }
-
-        function navigate(direction) {
-            currentIndex += direction;
-            if (currentIndex < 0) currentIndex = products.length - 1;
-            if (currentIndex >= products.length) currentIndex = 0;
-            updateLightbox();
-        }
-
-        function goToImage(index) {
-            currentIndex = index;
-            updateLightbox();
+            lightboxColor.textContent = colorName;
+            lightboxTitle.textContent = product.title;
         }
 
         // Event listeners
         document.querySelector('.lightbox-close').addEventListener('click', closeLightbox);
-        document.querySelector('.lightbox-prev').addEventListener('click', () => navigate(-1));
-        document.querySelector('.lightbox-next').addEventListener('click', () => navigate(1));
         document.querySelector('.lightbox-backdrop').addEventListener('click', closeLightbox);
 
         // Keyboard navigation
         document.addEventListener('keydown', (e) => {
             if (!lightbox.classList.contains('active')) return;
-
-            switch (e.key) {
-                case 'Escape':
-                    closeLightbox();
-                    break;
-                case 'ArrowLeft':
-                    navigate(-1);
-                    break;
-                case 'ArrowRight':
-                    navigate(1);
-                    break;
-            }
+            if (e.key === 'Escape') closeLightbox();
         });
-
-        // Touch/swipe gestures
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let touchEndX = 0;
-        let touchEndY = 0;
-        const minSwipeDistance = 50;
-
-        lightbox.addEventListener('touchstart', (e) => {
-            touchStartX = e.changedTouches[0].screenX;
-            touchStartY = e.changedTouches[0].screenY;
-        }, { passive: true });
-
-        lightbox.addEventListener('touchend', (e) => {
-            touchEndX = e.changedTouches[0].screenX;
-            touchEndY = e.changedTouches[0].screenY;
-            handleSwipe();
-        }, { passive: true });
-
-        function handleSwipe() {
-            const deltaX = touchEndX - touchStartX;
-            const deltaY = touchEndY - touchStartY;
-
-            // Only handle horizontal swipes
-            if (Math.abs(deltaX) < minSwipeDistance) return;
-            if (Math.abs(deltaY) > Math.abs(deltaX)) return;
-
-            if (deltaX > 0) {
-                navigate(-1); // Swipe right = previous
-            } else {
-                navigate(1); // Swipe left = next
-            }
-        }
-
-        // Initialize all product images on page load
-        function initializeImages() {
-            document.querySelectorAll('.image-card').forEach((card, index) => {
-                const img = card.querySelector('.image-wrapper img');
-                img.src = getImageSrc(index);
-            });
-            // Set default lightbox image
-            lightboxImage.src = getImageSrc(0);
-        }
-
-        // Initialize on DOM ready
-        initializeImages();
     </script>
 </body>
 </html>
