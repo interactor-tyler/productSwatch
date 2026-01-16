@@ -107,6 +107,8 @@ function setupInteract() {
     interact('#logo-overlay')
         .draggable({
             inertia: true,
+            // Ignore drag events from rotation handle
+            ignoreFrom: '.rotate-handle',
             modifiers: [
                 interact.modifiers.restrictRect({
                     restriction: 'parent',
@@ -130,6 +132,16 @@ function setupInteract() {
             ],
             listeners: {
                 move: resizeMoveListener,
+                end: updateCanvasFromOverlay
+            }
+        });
+
+    // Setup rotation handle
+    interact('.rotate-handle')
+        .draggable({
+            listeners: {
+                start: rotateStartListener,
+                move: rotateMoveListener,
                 end: updateCanvasFromOverlay
             }
         });
@@ -179,6 +191,83 @@ function resizeMoveListener(event) {
 
     // Update canvas in real-time during resize
     renderCanvas();
+}
+
+/**
+ * Store the starting angle for rotation
+ */
+let rotationStartAngle = 0;
+
+/**
+ * Rotation start listener - calculate initial angle
+ */
+function rotateStartListener(event) {
+    const logoCenter = getLogoCenterPosition();
+    const startAngle = getAngleFromCenter(event.clientX, event.clientY, logoCenter);
+    rotationStartAngle = startAngle - editorState.logo.rotation;
+}
+
+/**
+ * Rotation move listener - calculate and apply rotation
+ */
+function rotateMoveListener(event) {
+    const logoCenter = getLogoCenterPosition();
+    const currentAngle = getAngleFromCenter(event.clientX, event.clientY, logoCenter);
+    let rotation = currentAngle - rotationStartAngle;
+
+    // Normalize to -180 to 180 range
+    while (rotation > 180) rotation -= 360;
+    while (rotation < -180) rotation += 360;
+
+    // Round to nearest degree
+    rotation = Math.round(rotation);
+
+    editorState.logo.rotation = rotation;
+
+    // Update overlay transform
+    if (logoOverlay) {
+        const { x, y } = editorState.logo;
+        logoOverlay.style.transform = `translate(${x}px, ${y}px) rotate(${rotation}deg)`;
+    }
+
+    // Update rotation slider and value display
+    if (rotationSlider) {
+        rotationSlider.value = rotation;
+    }
+    if (rotationValue) {
+        rotationValue.textContent = rotation + '°';
+    }
+
+    // Update canvas in real-time
+    renderCanvas();
+}
+
+/**
+ * Get the center position of the logo in screen coordinates
+ */
+function getLogoCenterPosition() {
+    if (!logoOverlay || !canvasWrapper) {
+        return { x: 0, y: 0 };
+    }
+
+    const wrapperRect = canvasWrapper.getBoundingClientRect();
+    const { x, y, width, height } = editorState.logo;
+
+    return {
+        x: wrapperRect.left + x + width / 2,
+        y: wrapperRect.top + y + height / 2
+    };
+}
+
+/**
+ * Calculate angle from center point to a position
+ */
+function getAngleFromCenter(clientX, clientY, center) {
+    const dx = clientX - center.x;
+    const dy = clientY - center.y;
+    // atan2 returns radians, convert to degrees
+    // Subtract 90 because our handle is at the top (not right)
+    return Math.atan2(dy, dx) * (180 / Math.PI) + 90;
 }
 
 /**

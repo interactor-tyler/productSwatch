@@ -152,13 +152,15 @@
 /* Resize handles */
 .logo-overlay .resize-handle {
     position: absolute;
-    width: 12px;
-    height: 12px;
+    width: 14px;
+    height: 14px;
     background: var(--color-primary);
     border: 2px solid var(--color-white);
     border-radius: 50%;
     opacity: 0;
-    transition: opacity 0.2s ease;
+    transition: opacity 0.2s ease, transform 0.1s ease;
+    touch-action: none;
+    z-index: 10;
 }
 
 .logo-overlay:hover .resize-handle,
@@ -166,10 +168,15 @@
     opacity: 1;
 }
 
-.logo-overlay .resize-handle.nw { top: -6px; left: -6px; cursor: nw-resize; }
-.logo-overlay .resize-handle.ne { top: -6px; right: -6px; cursor: ne-resize; }
-.logo-overlay .resize-handle.sw { bottom: -6px; left: -6px; cursor: sw-resize; }
-.logo-overlay .resize-handle.se { bottom: -6px; right: -6px; cursor: se-resize; }
+.logo-overlay .resize-handle:hover {
+    transform: scale(1.2);
+    background: var(--color-primary-dark);
+}
+
+.logo-overlay .resize-handle.nw { top: -7px; left: -7px; cursor: nw-resize; }
+.logo-overlay .resize-handle.ne { top: -7px; right: -7px; cursor: ne-resize; }
+.logo-overlay .resize-handle.sw { bottom: -7px; left: -7px; cursor: sw-resize; }
+.logo-overlay .resize-handle.se { bottom: -7px; right: -7px; cursor: se-resize; }
 
 /* Rotation handle */
 .logo-overlay .rotate-handle {
@@ -177,17 +184,19 @@
     top: -30px;
     left: 50%;
     transform: translateX(-50%);
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     background: var(--color-primary);
     border: 2px solid var(--color-white);
     border-radius: 50%;
     cursor: grab;
     opacity: 0;
-    transition: opacity 0.2s ease;
+    transition: opacity 0.2s ease, transform 0.1s ease;
     display: flex;
     align-items: center;
     justify-content: center;
+    touch-action: none;
+    z-index: 10;
 }
 
 .logo-overlay:hover .rotate-handle,
@@ -195,12 +204,22 @@
     opacity: 1;
 }
 
+.logo-overlay .rotate-handle:hover {
+    transform: translateX(-50%) scale(1.15);
+    background: var(--color-primary-dark);
+}
+
+.logo-overlay .rotate-handle:active {
+    cursor: grabbing;
+    transform: translateX(-50%) scale(1.1);
+}
+
 .logo-overlay .rotate-handle::before {
     content: '';
     position: absolute;
     top: 100%;
     left: 50%;
-    width: 1px;
+    width: 2px;
     height: 10px;
     background: var(--color-primary);
     transform: translateX(-50%);
@@ -211,6 +230,7 @@
     height: 12px;
     stroke: var(--color-white);
     stroke-width: 2;
+    pointer-events: none;
 }
 
 /* Sidebar Controls */
