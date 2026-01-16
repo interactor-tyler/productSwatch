@@ -1,0 +1,519 @@
+/* ===================== LOGO EDITOR MODAL ===================== */
+.logo-editor {
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s;
+}
+
+.logo-editor.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.logo-editor-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(26, 26, 26, 0.95);
+}
+
+.logo-editor-container {
+    position: relative;
+    z-index: 1;
+    background: var(--color-white);
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    max-width: 900px;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transform: scale(0.95);
+    opacity: 0;
+    transition: all 0.3s ease 0.1s;
+}
+
+.logo-editor.active .logo-editor-container {
+    transform: scale(1);
+    opacity: 1;
+}
+
+/* Editor Header */
+.logo-editor-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.logo-editor-title {
+    font-family: var(--font-secondary);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.logo-editor-close {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: var(--color-light-gray);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-editor-close:hover {
+    background: var(--color-primary);
+    transform: rotate(90deg);
+}
+
+.logo-editor-close svg {
+    width: 14px;
+    height: 14px;
+    stroke: var(--color-text);
+    stroke-width: 2;
+    transition: stroke var(--transition-fast);
+}
+
+.logo-editor-close:hover svg {
+    stroke: var(--color-white);
+}
+
+/* Editor Body */
+.logo-editor-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Canvas Area */
+.logo-editor-canvas-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background: var(--color-off-white);
+    position: relative;
+    min-height: 400px;
+}
+
+.logo-editor-canvas-wrapper {
+    position: relative;
+    background: var(--color-white);
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+#logo-editor-canvas {
+    display: block;
+    max-width: 100%;
+    max-height: 60vh;
+}
+
+/* Logo overlay element for interact.js */
+.logo-overlay {
+    position: absolute;
+    touch-action: none;
+    cursor: move;
+    border: 2px dashed transparent;
+    transition: border-color 0.2s ease;
+}
+
+.logo-overlay:hover,
+.logo-overlay.active {
+    border-color: var(--color-primary);
+}
+
+.logo-overlay img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    user-select: none;
+}
+
+/* Resize handles */
+.logo-overlay .resize-handle {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: var(--color-primary);
+    border: 2px solid var(--color-white);
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.logo-overlay:hover .resize-handle,
+.logo-overlay.active .resize-handle {
+    opacity: 1;
+}
+
+.logo-overlay .resize-handle.nw { top: -6px; left: -6px; cursor: nw-resize; }
+.logo-overlay .resize-handle.ne { top: -6px; right: -6px; cursor: ne-resize; }
+.logo-overlay .resize-handle.sw { bottom: -6px; left: -6px; cursor: sw-resize; }
+.logo-overlay .resize-handle.se { bottom: -6px; right: -6px; cursor: se-resize; }
+
+/* Rotation handle */
+.logo-overlay .rotate-handle {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 20px;
+    background: var(--color-primary);
+    border: 2px solid var(--color-white);
+    border-radius: 50%;
+    cursor: grab;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-overlay:hover .rotate-handle,
+.logo-overlay.active .rotate-handle {
+    opacity: 1;
+}
+
+.logo-overlay .rotate-handle::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    width: 1px;
+    height: 10px;
+    background: var(--color-primary);
+    transform: translateX(-50%);
+}
+
+.logo-overlay .rotate-handle svg {
+    width: 12px;
+    height: 12px;
+    stroke: var(--color-white);
+    stroke-width: 2;
+}
+
+/* Sidebar Controls */
+.logo-editor-sidebar {
+    width: 280px;
+    border-left: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    background: var(--color-white);
+}
+
+.logo-editor-section {
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.logo-editor-section:last-child {
+    border-bottom: none;
+}
+
+.logo-editor-section-title {
+    font-family: var(--font-secondary);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text-muted);
+    margin-bottom: 0.75rem;
+}
+
+/* Upload Zone */
+.logo-upload-zone {
+    border: 2px dashed var(--color-border);
+    border-radius: 8px;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    background: var(--color-off-white);
+}
+
+.logo-upload-zone:hover {
+    border-color: var(--color-primary);
+    background: rgba(126, 188, 89, 0.05);
+}
+
+.logo-upload-zone.dragover {
+    border-color: var(--color-primary);
+    border-style: solid;
+    background: rgba(126, 188, 89, 0.1);
+}
+
+.logo-upload-zone.has-logo {
+    padding: 0.75rem;
+}
+
+.logo-upload-zone.error {
+    border-color: var(--color-error);
+    background: rgba(220, 38, 38, 0.05);
+}
+
+.logo-upload-icon {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 0.75rem;
+    stroke: var(--color-mid-gray);
+    transition: stroke var(--transition-fast);
+}
+
+.logo-upload-zone:hover .logo-upload-icon {
+    stroke: var(--color-primary);
+}
+
+.logo-upload-text {
+    font-family: var(--font-secondary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 0.25rem;
+}
+
+.logo-upload-hint {
+    font-family: var(--font-secondary);
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+}
+
+.logo-upload-error {
+    font-family: var(--font-secondary);
+    font-size: 0.75rem;
+    color: var(--color-error);
+    margin-top: 0.5rem;
+    display: none;
+}
+
+.logo-upload-zone.error .logo-upload-error {
+    display: block;
+}
+
+/* Logo Preview in sidebar */
+.logo-preview {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.logo-upload-zone.has-logo .logo-preview {
+    display: flex;
+}
+
+.logo-upload-zone.has-logo .logo-upload-default {
+    display: none;
+}
+
+.logo-preview-thumb {
+    max-width: 100%;
+    max-height: 80px;
+    border-radius: 4px;
+    object-fit: contain;
+}
+
+.logo-preview-change {
+    font-family: var(--font-secondary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+/* Controls */
+.logo-control-group {
+    margin-bottom: 1rem;
+}
+
+.logo-control-group:last-child {
+    margin-bottom: 0;
+}
+
+.logo-control-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-secondary);
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--color-text);
+    margin-bottom: 0.5rem;
+}
+
+.logo-control-value {
+    font-weight: 400;
+    color: var(--color-text-muted);
+}
+
+.logo-control-slider {
+    width: 100%;
+    height: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--color-light-gray);
+    border-radius: 2px;
+    outline: none;
+}
+
+.logo-control-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--color-primary);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform var(--transition-fast);
+}
+
+.logo-control-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+.logo-control-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: var(--color-primary);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+/* Editor Footer */
+.logo-editor-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1.25rem 1.5rem;
+    border-top: 1px solid var(--color-border);
+    background: var(--color-off-white);
+}
+
+.logo-editor-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    font-family: var(--font-secondary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    border: 2px solid transparent;
+}
+
+.logo-editor-btn-cancel {
+    background: var(--color-white);
+    border-color: var(--color-border);
+    color: var(--color-text-muted);
+}
+
+.logo-editor-btn-cancel:hover {
+    border-color: var(--color-text-muted);
+    color: var(--color-text);
+}
+
+.logo-editor-btn-download {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-white);
+}
+
+.logo-editor-btn-download:hover {
+    background: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
+}
+
+.logo-editor-btn-download:disabled {
+    background: var(--color-mid-gray);
+    border-color: var(--color-mid-gray);
+    cursor: not-allowed;
+}
+
+/* Toast Notification */
+.logo-editor-toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--color-dark);
+    color: var(--color-white);
+    font-family: var(--font-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 4000;
+}
+
+.logo-editor-toast.active {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+    visibility: visible;
+}
+
+.logo-editor-toast.success {
+    background: var(--color-primary);
+}
+
+.logo-editor-toast.error {
+    background: var(--color-error);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .logo-editor-container {
+        max-width: 100%;
+        max-height: 100%;
+        border-radius: 0;
+    }
+
+    .logo-editor-body {
+        flex-direction: column;
+    }
+
+    .logo-editor-canvas-area {
+        min-height: 300px;
+        padding: 1rem;
+    }
+
+    .logo-editor-sidebar {
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid var(--color-border);
+        max-height: 50vh;
+        overflow-y: auto;
+    }
+
+    .logo-editor-footer {
+        padding: 1rem;
+    }
+
+    .logo-editor-btn {
+        padding: 0.65rem 1rem;
+        font-size: 0.8rem;
+    }
+}
