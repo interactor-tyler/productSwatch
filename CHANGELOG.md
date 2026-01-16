@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/interactor-tyler/productSwatch/compare/v1.2.0...v1.3.0) (2026-01-16)
+
+
+### Features
+
+* single centered product with real color variant images ([#6](https://github.com/interactor-tyler/productSwatch/issues/6)) ([c346550](https://github.com/interactor-tyler/productSwatch/commit/c346550557341b2b010a324d2dfce4cb409f8e57))
+
 ## [1.2.0](https://github.com/interactor-tyler/productSwatch/compare/v1.1.0...v1.2.0) (2026-01-16)
 
 
