@@ -176,6 +176,88 @@
             color: var(--color-text-muted);
         }
 
+        /* ===================== COLOR SWATCHES ===================== */
+        .color-swatches {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            border-top: 1px solid var(--color-light-gray);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .swatch {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            position: relative;
+            outline: none;
+        }
+
+        .swatch:hover {
+            transform: scale(1.15);
+        }
+
+        .swatch.active {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px var(--color-white), 0 0 0 4px var(--color-primary);
+        }
+
+        .swatch[data-color="white"] {
+            border: 1px solid var(--color-border);
+        }
+
+        .swatch[data-color="white"].active {
+            border-color: var(--color-primary);
+        }
+
+        /* Swatch tooltip */
+        .swatch::after {
+            content: attr(title);
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--color-dark);
+            color: var(--color-white);
+            font-family: var(--font-secondary);
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.35rem 0.5rem;
+            border-radius: 4px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-fast);
+            pointer-events: none;
+        }
+
+        .swatch:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Selected color label */
+        .selected-color {
+            font-family: var(--font-secondary);
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--color-text-muted);
+            text-align: center;
+            padding: 0 1rem 0.75rem;
+        }
+
+        .selected-color span {
+            color: var(--color-text);
+        }
+
         /* ===================== LIGHTBOX ===================== */
         .lightbox {
             position: fixed;
@@ -495,37 +577,73 @@
 
     <main class="gallery-container">
         <div class="gallery">
-            <article class="image-card" data-index="0">
+            <article class="image-card" data-index="0" data-product="1">
                 <div class="image-wrapper">
-                    <img src="productImgs/image1.jpg" alt="Product 1" loading="lazy">
+                    <img src="productImgs/image1.jpg" alt="Product 1" loading="lazy" data-base-src="productImgs/image1">
                     <span class="quick-view">Quick View</span>
                 </div>
                 <div class="card-meta">
                     <span class="card-label">Product One</span>
                     <span class="card-number">SKU: PRD-001</span>
                 </div>
+                <div class="color-swatches">
+                    <button class="swatch active" data-color="black" style="background: #1a1a1a" title="Black"></button>
+                    <button class="swatch" data-color="white" style="background: #ffffff" title="White"></button>
+                    <button class="swatch" data-color="red" style="background: #e53935" title="Red"></button>
+                    <button class="swatch" data-color="blue" style="background: #1e88e5" title="Blue"></button>
+                    <button class="swatch" data-color="green" style="background: #43a047" title="Green"></button>
+                    <button class="swatch" data-color="yellow" style="background: #fdd835" title="Yellow"></button>
+                    <button class="swatch" data-color="orange" style="background: #fb8c00" title="Orange"></button>
+                    <button class="swatch" data-color="purple" style="background: #8e24aa" title="Purple"></button>
+                    <button class="swatch" data-color="pink" style="background: #d81b60" title="Pink"></button>
+                </div>
+                <div class="selected-color">Color: <span>Black</span></div>
             </article>
 
-            <article class="image-card" data-index="1">
+            <article class="image-card" data-index="1" data-product="2">
                 <div class="image-wrapper">
-                    <img src="productImgs/image2.jpg" alt="Product 2" loading="lazy">
+                    <img src="productImgs/image2.jpg" alt="Product 2" loading="lazy" data-base-src="productImgs/image2">
                     <span class="quick-view">Quick View</span>
                 </div>
                 <div class="card-meta">
                     <span class="card-label">Product Two</span>
                     <span class="card-number">SKU: PRD-002</span>
                 </div>
+                <div class="color-swatches">
+                    <button class="swatch active" data-color="black" style="background: #1a1a1a" title="Black"></button>
+                    <button class="swatch" data-color="white" style="background: #ffffff" title="White"></button>
+                    <button class="swatch" data-color="red" style="background: #e53935" title="Red"></button>
+                    <button class="swatch" data-color="blue" style="background: #1e88e5" title="Blue"></button>
+                    <button class="swatch" data-color="green" style="background: #43a047" title="Green"></button>
+                    <button class="swatch" data-color="yellow" style="background: #fdd835" title="Yellow"></button>
+                    <button class="swatch" data-color="orange" style="background: #fb8c00" title="Orange"></button>
+                    <button class="swatch" data-color="purple" style="background: #8e24aa" title="Purple"></button>
+                    <button class="swatch" data-color="pink" style="background: #d81b60" title="Pink"></button>
+                </div>
+                <div class="selected-color">Color: <span>Black</span></div>
             </article>
 
-            <article class="image-card" data-index="2">
+            <article class="image-card" data-index="2" data-product="3">
                 <div class="image-wrapper">
-                    <img src="productImgs/image3.jpg" alt="Product 3" loading="lazy">
+                    <img src="productImgs/image3.jpg" alt="Product 3" loading="lazy" data-base-src="productImgs/image3">
                     <span class="quick-view">Quick View</span>
                 </div>
                 <div class="card-meta">
                     <span class="card-label">Product Three</span>
                     <span class="card-number">SKU: PRD-003</span>
                 </div>
+                <div class="color-swatches">
+                    <button class="swatch active" data-color="black" style="background: #1a1a1a" title="Black"></button>
+                    <button class="swatch" data-color="white" style="background: #ffffff" title="White"></button>
+                    <button class="swatch" data-color="red" style="background: #e53935" title="Red"></button>
+                    <button class="swatch" data-color="blue" style="background: #1e88e5" title="Blue"></button>
+                    <button class="swatch" data-color="green" style="background: #43a047" title="Green"></button>
+                    <button class="swatch" data-color="yellow" style="background: #fdd835" title="Yellow"></button>
+                    <button class="swatch" data-color="orange" style="background: #fb8c00" title="Orange"></button>
+                    <button class="swatch" data-color="purple" style="background: #8e24aa" title="Purple"></button>
+                    <button class="swatch" data-color="pink" style="background: #d81b60" title="Pink"></button>
+                </div>
+                <div class="selected-color">Color: <span>Black</span></div>
             </article>
 
         </div>
@@ -541,7 +659,7 @@
         <div class="lightbox-backdrop"></div>
         <div class="lightbox-content">
             <div class="lightbox-image-container">
-                <img class="lightbox-image" id="lightbox-image" src="" alt="">
+                <img class="lightbox-image" id="lightbox-image" src="productImgs/image1.jpg" alt="Product">
             </div>
         </div>
 
@@ -567,11 +685,43 @@
     </div>
 
     <script>
-        const images = [
-            { src: 'productImgs/image1.jpg', number: '01', title: 'Product One' },
-            { src: 'productImgs/image2.jpg', number: '02', title: 'Product Two' },
-            { src: 'productImgs/image3.jpg', number: '03', title: 'Product Three' }
+        // Color configuration - image paths for each color variant
+        // Currently using placeholder (same image), ready for real variants
+        const colorConfig = {
+            black:  { name: 'Black',  hex: '#1a1a1a', suffix: '' },
+            white:  { name: 'White',  hex: '#ffffff', suffix: '-white' },
+            red:    { name: 'Red',    hex: '#e53935', suffix: '-red' },
+            blue:   { name: 'Blue',   hex: '#1e88e5', suffix: '-blue' },
+            green:  { name: 'Green',  hex: '#43a047', suffix: '-green' },
+            yellow: { name: 'Yellow', hex: '#fdd835', suffix: '-yellow' },
+            orange: { name: 'Orange', hex: '#fb8c00', suffix: '-orange' },
+            purple: { name: 'Purple', hex: '#8e24aa', suffix: '-purple' },
+            pink:   { name: 'Pink',   hex: '#d81b60', suffix: '-pink' }
+        };
+
+        // Track selected color per product
+        const productColors = {
+            1: 'black',
+            2: 'black',
+            3: 'black'
+        };
+
+        // Product data with dynamic image source based on selected color
+        const products = [
+            { baseSrc: 'productImgs/image1', number: '01', title: 'Product One' },
+            { baseSrc: 'productImgs/image2', number: '02', title: 'Product Two' },
+            { baseSrc: 'productImgs/image3', number: '03', title: 'Product Three' }
         ];
+
+        // Get image src for a product with selected color
+        function getImageSrc(productIndex) {
+            const product = products[productIndex];
+            const colorKey = productColors[productIndex + 1];
+            const color = colorConfig[colorKey];
+            // For now, use base image (placeholder) - when real images exist, use suffix
+            // return `${product.baseSrc}${color.suffix}.jpg`;
+            return `${product.baseSrc}.jpg`; // Placeholder - same image for all colors
+        }
 
         let currentIndex = 0;
         const lightbox = document.getElementById('lightbox');
@@ -581,16 +731,43 @@
         const lightboxCounter = document.getElementById('lightbox-counter');
 
         // Create counter dots
-        images.forEach((_, i) => {
+        products.forEach((_, i) => {
             const dot = document.createElement('div');
             dot.className = 'counter-dot' + (i === 0 ? ' active' : '');
             dot.addEventListener('click', () => goToImage(i));
             lightboxCounter.appendChild(dot);
         });
 
-        // Open lightbox
+        // Color swatch click handler
+        document.querySelectorAll('.swatch').forEach(swatch => {
+            swatch.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent card click (lightbox open)
+
+                const card = swatch.closest('.image-card');
+                const productId = parseInt(card.dataset.product);
+                const color = swatch.dataset.color;
+
+                // Update active swatch
+                card.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+                swatch.classList.add('active');
+
+                // Update selected color label
+                const colorLabel = card.querySelector('.selected-color span');
+                colorLabel.textContent = colorConfig[color].name;
+
+                // Store selected color
+                productColors[productId] = color;
+
+                // Update product image
+                const img = card.querySelector('.image-wrapper img');
+                img.src = getImageSrc(productId - 1);
+            });
+        });
+
+        // Open lightbox (only when clicking image area, not swatches)
         document.querySelectorAll('.image-card').forEach(card => {
-            card.addEventListener('click', () => {
+            const imageWrapper = card.querySelector('.image-wrapper');
+            imageWrapper.addEventListener('click', () => {
                 const index = parseInt(card.dataset.index);
                 openLightbox(index);
             });
@@ -609,11 +786,14 @@
         }
 
         function updateLightbox() {
-            const img = images[currentIndex];
-            lightboxImage.src = img.src;
-            lightboxImage.alt = img.title;
-            lightboxNumber.textContent = `${img.number} / 0${images.length}`;
-            lightboxTitle.textContent = img.title;
+            const product = products[currentIndex];
+            const colorKey = productColors[currentIndex + 1];
+            const colorName = colorConfig[colorKey].name;
+
+            lightboxImage.src = getImageSrc(currentIndex);
+            lightboxImage.alt = `${product.title} - ${colorName}`;
+            lightboxNumber.textContent = `${product.number} / 0${products.length}`;
+            lightboxTitle.textContent = `${product.title} - ${colorName}`;
 
             // Update counter dots
             document.querySelectorAll('.counter-dot').forEach((dot, i) => {
@@ -623,8 +803,8 @@
 
         function navigate(direction) {
             currentIndex += direction;
-            if (currentIndex < 0) currentIndex = images.length - 1;
-            if (currentIndex >= images.length) currentIndex = 0;
+            if (currentIndex < 0) currentIndex = products.length - 1;
+            if (currentIndex >= products.length) currentIndex = 0;
             updateLightbox();
         }
 
