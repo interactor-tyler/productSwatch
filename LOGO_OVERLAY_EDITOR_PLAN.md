@@ -2,7 +2,7 @@
 
 ## Overview
 
-Build a logo overlay editor that allows users to upload a logo, position it on a product image, and export the composited result as JPG, PNG, or PDF.
+Build a logo overlay editor that allows users to upload a logo (JPG, PNG, or SVG, max 2MB), position it on a product image, and export the composited result as JPG.
 
 **Priority:** Speed & Modern Design Practices
 **Tech Stack:** Vanilla JS (consistent with existing codebase), HTML5 Canvas API
@@ -18,12 +18,11 @@ Given the existing vanilla JS architecture and the requirement for speed, we'll 
 - **HTML5 Canvas API** - For image composition and manipulation
 - **Native Drag & Drop API** - For logo upload
 - **Interact.js** (lightweight ~30KB) - For drag/resize/rotate interactions
-- **jsPDF** (~50KB) - For PDF export only
 
 This approach:
 - Maintains consistency with the existing codebase
 - Requires no build step
-- Loads quickly via CDN
+- Loads quickly via CDN (single dependency)
 - Provides smooth, modern interactions
 
 ---
@@ -34,13 +33,11 @@ This approach:
 
 | Feature | Description | Priority |
 |---------|-------------|----------|
-| Logo Upload | Drag-drop or file picker for PNG/JPG/SVG logos | P0 |
+| Logo Upload | Drag-drop or file picker for JPG/PNG/SVG logos (max 2MB) | P0 |
 | Logo Positioning | Drag logo anywhere on product image | P0 |
 | Logo Resizing | Scale logo up/down with handles | P0 |
 | Logo Rotation | Rotate logo to any angle | P1 |
 | Export JPG | Download composited image as JPEG | P0 |
-| Export PNG | Download composited image as PNG (transparency) | P0 |
-| Export PDF | Download composited image as PDF | P0 |
 
 ### Enhanced Features (Post-MVP)
 
@@ -77,9 +74,9 @@ Add a new modal that opens when user clicks "Add Logo" button on a product.
 │  │ Upload Logo  │  │ Controls: Position/Size  │    │
 │  └──────────────┘  └──────────────────────────┘    │
 │                                                     │
-│  ┌────────┐ ┌────────┐ ┌────────┐                  │
-│  │  JPG   │ │  PNG   │ │  PDF   │     [Cancel]     │
-│  └────────┘ └────────┘ └────────┘                  │
+│         ┌────────────────┐  ┌──────────┐           │
+│         │  Download JPG  │  │  Cancel  │           │
+│         └────────────────┘  └──────────┘           │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -95,10 +92,10 @@ Add a new modal that opens when user clicks "Add Logo" button on a product.
 **Tasks:**
 - [ ] Create drag-and-drop zone with visual feedback
 - [ ] Implement file input fallback button
-- [ ] Validate file types (PNG, JPG, JPEG, SVG, WebP)
-- [ ] Validate file size (max 5MB recommended)
+- [ ] Validate file types (JPG, JPEG, PNG, SVG only)
+- [ ] Validate file size (max 2MB, reject larger files with error message)
 - [ ] Show upload preview/confirmation
-- [ ] Handle upload errors gracefully
+- [ ] Handle upload errors gracefully (invalid type, oversized file)
 
 ---
 
@@ -153,7 +150,7 @@ Add a new modal that opens when user clicks "Add Logo" button on a product.
 ---
 
 ### Phase 4: Export Functionality
-**Estimated Complexity: Medium**
+**Estimated Complexity: Low**
 
 #### 4.1 JPG Export
 
@@ -161,20 +158,7 @@ Add a new modal that opens when user clicks "Add Logo" button on a product.
 - [ ] Flatten canvas layers to single image
 - [ ] Convert canvas to JPEG blob (quality 0.92)
 - [ ] Trigger download with filename: `{product}-with-logo.jpg`
-
-#### 4.2 PNG Export
-
-**Tasks:**
-- [ ] Convert canvas to PNG blob (preserves transparency)
-- [ ] Trigger download with filename: `{product}-with-logo.png`
-
-#### 4.3 PDF Export
-
-**Tasks:**
-- [ ] Add jsPDF library from CDN
-- [ ] Create PDF document with proper dimensions
-- [ ] Embed canvas as image in PDF
-- [ ] Trigger download with filename: `{product}-with-logo.pdf`
+- [ ] Show success feedback on download
 
 ---
 
@@ -224,9 +208,6 @@ productSwatch/
 ```html
 <!-- Interact.js - Drag, resize, rotate interactions -->
 <script src="https://cdn.jsdelivr.net/npm/interactjs@1.10.18/dist/interact.min.js"></script>
-
-<!-- jsPDF - PDF generation -->
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 ```
 
 ### Key JavaScript Functions
@@ -248,17 +229,50 @@ const editorState = {
   ctx: null
 };
 
+// File validation constants
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/svg+xml'];
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB in bytes
+
 // Main functions to implement
 function openLogoEditor(productImageSrc) { }
 function closeLogoEditor() { }
+function validateLogoFile(file) { }  // Returns { valid: boolean, error?: string }
 function handleLogoUpload(file) { }
 function renderCanvas() { }
 function updateLogoPosition(x, y) { }
 function updateLogoSize(width, height) { }
 function updateLogoRotation(angle) { }
 function exportAsJPG() { }
-function exportAsPNG() { }
-function exportAsPDF() { }
+```
+
+### Logo File Validation
+
+```javascript
+function validateLogoFile(file) {
+  const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/svg+xml'];
+  const MAX_SIZE = 2 * 1024 * 1024; // 2MB
+
+  if (!file) {
+    return { valid: false, error: 'No file selected' };
+  }
+
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    return {
+      valid: false,
+      error: 'Invalid file type. Please upload a JPG, PNG, or SVG file.'
+    };
+  }
+
+  if (file.size > MAX_SIZE) {
+    const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+    return {
+      valid: false,
+      error: `File too large (${sizeMB}MB). Maximum size is 2MB.`
+    };
+  }
+
+  return { valid: true };
+}
 ```
 
 ### Canvas Rendering Algorithm
@@ -314,18 +328,17 @@ function renderCanvas() {
 
 | State | Style |
 |-------|-------|
-| Default | Dashed border, light gray bg |
+| Default | Dashed border, light gray bg, "JPG, PNG, or SVG (max 2MB)" hint |
 | Hover | Primary color border, light primary bg |
 | Active (dragging) | Solid primary border, pulsing animation |
+| Error | Red border, error message displayed |
 | Has Logo | Show thumbnail, "Change Logo" button |
 
 ### Control Buttons
 
 | Button | Style |
 |--------|-------|
-| Export JPG | Primary color, white text |
-| Export PNG | Primary color outline |
-| Export PDF | Primary color outline |
+| Download JPG | Primary color, white text |
 | Cancel | Gray outline |
 
 ### Logo Handles
@@ -342,16 +355,16 @@ function renderCanvas() {
 
 ### Functional Testing
 
-- [ ] Upload PNG logo - displays correctly
 - [ ] Upload JPG logo - displays correctly
+- [ ] Upload PNG logo - displays correctly
 - [ ] Upload SVG logo - displays correctly
+- [ ] Reject file over 2MB with error message
+- [ ] Reject invalid file type (e.g., .gif, .webp) with error message
 - [ ] Drag logo to all corners
 - [ ] Resize logo smaller
 - [ ] Resize logo larger
 - [ ] Rotate logo 360 degrees
 - [ ] Export JPG - correct format and quality
-- [ ] Export PNG - transparency preserved
-- [ ] Export PDF - correct dimensions
 - [ ] Cancel closes editor without changes
 - [ ] ESC key closes editor
 - [ ] Click backdrop closes editor
@@ -367,7 +380,7 @@ function renderCanvas() {
 
 ### Performance Testing
 
-- [ ] Large logo files (4-5MB)
+- [ ] Logo files near 2MB limit
 - [ ] High-resolution product images
 - [ ] Multiple rapid exports
 - [ ] Memory usage over extended session
@@ -378,10 +391,10 @@ function renderCanvas() {
 
 | Risk | Mitigation |
 |------|------------|
-| Large file crashes | Implement file size validation, compress on upload |
+| Large file uploads | Enforce 2MB limit with clear error messaging |
+| Invalid file types | Validate MIME type before processing |
 | CORS issues with images | Ensure all images are same-origin or CORS-enabled |
 | Mobile performance | Use requestAnimationFrame, reduce render frequency |
-| PDF quality issues | Use high canvas resolution (2x) for PDF |
 | Browser compatibility | Feature detection, graceful degradation |
 
 ---
@@ -390,27 +403,25 @@ function renderCanvas() {
 
 1. **Time to First Interaction**: Editor opens in < 200ms
 2. **Upload to Preview**: Logo appears in < 500ms after upload
-3. **Export Speed**: All formats generate in < 2 seconds
+3. **Export Speed**: JPG export completes in < 1 second
 4. **Mobile Usability**: All features functional on touch devices
-5. **File Size**: Total added JS < 100KB (gzipped)
+5. **File Size**: Total added JS < 50KB (gzipped, single dependency)
 
 ---
 
 ## Implementation Order (Recommended)
 
 1. **Phase 1.1** - Editor modal structure & styling
-2. **Phase 1.2** - Logo upload system
+2. **Phase 1.2** - Logo upload system (with 2MB/type validation)
 3. **Phase 2.1** - Canvas setup
 4. **Phase 2.2** - Basic logo rendering
 5. **Phase 3.1** - Drag positioning (Interact.js)
 6. **Phase 4.1** - JPG export (first working MVP)
-7. **Phase 4.2** - PNG export
-8. **Phase 3.2** - Resize controls
-9. **Phase 3.3** - Rotation controls
-10. **Phase 4.3** - PDF export
-11. **Phase 5** - Polish & accessibility
+7. **Phase 3.2** - Resize controls
+8. **Phase 3.3** - Rotation controls
+9. **Phase 5** - Polish & accessibility
 
-This order prioritizes getting a working MVP (drag + export) before adding advanced features.
+This order prioritizes getting a working MVP (upload + drag + JPG export) before adding advanced controls.
 
 ---
 
@@ -419,9 +430,10 @@ This order prioritizes getting a working MVP (drag + export) before adding advan
 This plan provides a complete roadmap for implementing a logo overlay editor that:
 
 - Maintains the existing vanilla JS architecture
-- Uses minimal external dependencies (2 CDN libraries)
+- Uses a single external dependency (Interact.js ~30KB)
 - Provides a modern, smooth user experience
-- Supports all required export formats
+- Enforces logo requirements (JPG/PNG/SVG, max 2MB)
+- Exports composited images as high-quality JPG
 - Works across desktop and mobile devices
 - Follows the existing design system
 
