@@ -685,18 +685,20 @@
     </div>
 
     <script>
-        // Color configuration - image paths for each color variant
-        // Currently using placeholder (same image), ready for real variants
+        // Color configuration with hex codes and contrasting text colors
+        // When real images are ready, set USE_REAL_IMAGES to true
+        const USE_REAL_IMAGES = false;
+
         const colorConfig = {
-            black:  { name: 'Black',  hex: '#1a1a1a', suffix: '' },
-            white:  { name: 'White',  hex: '#ffffff', suffix: '-white' },
-            red:    { name: 'Red',    hex: '#e53935', suffix: '-red' },
-            blue:   { name: 'Blue',   hex: '#1e88e5', suffix: '-blue' },
-            green:  { name: 'Green',  hex: '#43a047', suffix: '-green' },
-            yellow: { name: 'Yellow', hex: '#fdd835', suffix: '-yellow' },
-            orange: { name: 'Orange', hex: '#fb8c00', suffix: '-orange' },
-            purple: { name: 'Purple', hex: '#8e24aa', suffix: '-purple' },
-            pink:   { name: 'Pink',   hex: '#d81b60', suffix: '-pink' }
+            black:  { name: 'Black',  bg: '1a1a1a', text: 'ffffff' },
+            white:  { name: 'White',  bg: 'ffffff', text: '1a1a1a' },
+            red:    { name: 'Red',    bg: 'e53935', text: 'ffffff' },
+            blue:   { name: 'Blue',   bg: '1e88e5', text: 'ffffff' },
+            green:  { name: 'Green',  bg: '43a047', text: 'ffffff' },
+            yellow: { name: 'Yellow', bg: 'fdd835', text: '1a1a1a' },
+            orange: { name: 'Orange', bg: 'fb8c00', text: 'ffffff' },
+            purple: { name: 'Purple', bg: '8e24aa', text: 'ffffff' },
+            pink:   { name: 'Pink',   bg: 'd81b60', text: 'ffffff' }
         };
 
         // Track selected color per product
@@ -706,7 +708,7 @@
             3: 'black'
         };
 
-        // Product data with dynamic image source based on selected color
+        // Product data
         const products = [
             { baseSrc: 'productImgs/image1', number: '01', title: 'Product One' },
             { baseSrc: 'productImgs/image2', number: '02', title: 'Product Two' },
@@ -718,9 +720,20 @@
             const product = products[productIndex];
             const colorKey = productColors[productIndex + 1];
             const color = colorConfig[colorKey];
-            // For now, use base image (placeholder) - when real images exist, use suffix
-            // return `${product.baseSrc}${color.suffix}.jpg`;
-            return `${product.baseSrc}.jpg`; // Placeholder - same image for all colors
+
+            // Black always uses real product images
+            if (colorKey === 'black') {
+                return `${product.baseSrc}.jpg`;
+            }
+
+            if (USE_REAL_IMAGES) {
+                // Use real image files when available
+                return `${product.baseSrc}-${colorKey}.jpg`;
+            } else {
+                // Use placehold.co with color and product name
+                const text = encodeURIComponent(`${product.title}\n${color.name}`);
+                return `https://placehold.co/600x600/${color.bg}/${color.text}?text=${text}`;
+            }
         }
 
         let currentIndex = 0;
@@ -868,6 +881,19 @@
                 navigate(1); // Swipe left = next
             }
         }
+
+        // Initialize all product images on page load
+        function initializeImages() {
+            document.querySelectorAll('.image-card').forEach((card, index) => {
+                const img = card.querySelector('.image-wrapper img');
+                img.src = getImageSrc(index);
+            });
+            // Set default lightbox image
+            lightboxImage.src = getImageSrc(0);
+        }
+
+        // Initialize on DOM ready
+        initializeImages();
     </script>
 </body>
 </html>
