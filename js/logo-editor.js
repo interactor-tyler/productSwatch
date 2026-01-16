@@ -149,6 +149,9 @@ function dragMoveListener(event) {
 
     editorState.logo.x = x;
     editorState.logo.y = y;
+
+    // Update canvas in real-time during drag
+    renderCanvas();
 }
 
 /**
@@ -173,6 +176,9 @@ function resizeMoveListener(event) {
     editorState.logo.y = y;
     editorState.logo.width = event.rect.width;
     editorState.logo.height = event.rect.height;
+
+    // Update canvas in real-time during resize
+    renderCanvas();
 }
 
 /**
@@ -190,16 +196,32 @@ function openLogoEditor(productImageSrc) {
         initLogoEditor();
     }
 
+    // Check if we're opening with a different product image
+    const isNewProduct = editorState.productImageSrc !== productImageSrc;
+
     editorState.productImageSrc = productImageSrc;
     editorState.isOpen = true;
 
     // Load product image
     const img = new Image();
-    img.crossOrigin = 'anonymous';
+    // Only set crossOrigin for local images, not external URLs
+    if (!productImageSrc.startsWith('http')) {
+        img.crossOrigin = 'anonymous';
+    }
     img.onload = () => {
         editorState.productImage = img;
         setupCanvas();
+
+        // If opening with a new product, reset logo state
+        if (isNewProduct) {
+            resetLogoState();
+        } else if (editorState.logo.image) {
+            // Re-render with existing logo
+            updateLogoOverlay();
+        }
+
         renderCanvas();
+        updateDownloadButton();
     };
     img.onerror = () => {
         showToast('Failed to load product image', 'error');
@@ -451,11 +473,14 @@ function updateLogoOverlay() {
     logoOverlay.setAttribute('data-x', x);
     logoOverlay.setAttribute('data-y', y);
 
-    // Update image inside overlay
+    // Update image inside overlay (reuse existing or create new)
     let overlayImg = logoOverlay.querySelector('img');
     if (!overlayImg) {
         overlayImg = document.createElement('img');
-        logoOverlay.appendChild(overlayImg);
+        overlayImg.alt = 'Logo overlay';
+        overlayImg.draggable = false;
+        // Insert at the beginning so resize handles stay on top
+        logoOverlay.insertBefore(overlayImg, logoOverlay.firstChild);
     }
     overlayImg.src = editorState.logo.image.src;
 
@@ -555,67 +580,77 @@ function exportAsJPG() {
         return;
     }
 
-    // Create high-resolution export canvas
-    const exportCanvas = document.createElement('canvas');
-    const exportCtx = exportCanvas.getContext('2d');
+    try {
+        // Create high-resolution export canvas
+        const exportCanvas = document.createElement('canvas');
+        const exportCtx = exportCanvas.getContext('2d');
 
-    // Use original product image dimensions for better quality
-    const img = editorState.productImage;
-    exportCanvas.width = img.width;
-    exportCanvas.height = img.height;
+        // Use original product image dimensions for better quality
+        const img = editorState.productImage;
+        exportCanvas.width = img.width;
+        exportCanvas.height = img.height;
 
-    // Calculate scale factor
-    const scaleX = img.width / editorState.canvasRect.width;
-    const scaleY = img.height / editorState.canvasRect.height;
+        // Calculate scale factor
+        const scaleX = img.width / editorState.canvasRect.width;
+        const scaleY = img.height / editorState.canvasRect.height;
 
-    // Draw product image at full resolution
-    exportCtx.drawImage(img, 0, 0, img.width, img.height);
+        // Draw product image at full resolution
+        exportCtx.drawImage(img, 0, 0, img.width, img.height);
 
-    // Draw logo at scaled position
-    const logo = editorState.logo;
-    if (logo.image) {
-        exportCtx.save();
+        // Draw logo at scaled position
+        const logo = editorState.logo;
+        if (logo.image) {
+            exportCtx.save();
 
-        const scaledX = logo.x * scaleX;
-        const scaledY = logo.y * scaleY;
-        const scaledWidth = logo.width * scaleX;
-        const scaledHeight = logo.height * scaleY;
+            const scaledX = logo.x * scaleX;
+            const scaledY = logo.y * scaleY;
+            const scaledWidth = logo.width * scaleX;
+            const scaledHeight = logo.height * scaleY;
 
-        const centerX = scaledX + scaledWidth / 2;
-        const centerY = scaledY + scaledHeight / 2;
+            const centerX = scaledX + scaledWidth / 2;
+            const centerY = scaledY + scaledHeight / 2;
 
-        exportCtx.translate(centerX, centerY);
-        exportCtx.rotate(logo.rotation * Math.PI / 180);
+            exportCtx.translate(centerX, centerY);
+            exportCtx.rotate(logo.rotation * Math.PI / 180);
 
-        exportCtx.drawImage(
-            logo.image,
-            -scaledWidth / 2,
-            -scaledHeight / 2,
-            scaledWidth,
-            scaledHeight
-        );
+            exportCtx.drawImage(
+                logo.image,
+                -scaledWidth / 2,
+                -scaledHeight / 2,
+                scaledWidth,
+                scaledHeight
+            );
 
-        exportCtx.restore();
-    }
-
-    // Convert to blob and download
-    exportCanvas.toBlob((blob) => {
-        if (!blob) {
-            showToast('Failed to export image', 'error');
-            return;
+            exportCtx.restore();
         }
 
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `${product?.title || 'product'}-with-logo.jpg`.replace(/\s+/g, '-').toLowerCase();
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+        // Convert to blob and download
+        exportCanvas.toBlob((blob) => {
+            if (!blob) {
+                showToast('Failed to export image', 'error');
+                return;
+            }
 
-        showToast('Image downloaded successfully!', 'success');
-    }, 'image/jpeg', 0.92);
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${product?.title || 'product'}-with-logo.jpg`.replace(/\s+/g, '-').toLowerCase();
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            showToast('Image downloaded successfully!', 'success');
+        }, 'image/jpeg', 0.92);
+    } catch (error) {
+        // Handle tainted canvas error (CORS issue with external images)
+        if (error.name === 'SecurityError') {
+            showToast('Cannot export: please use a product with a local image', 'error');
+        } else {
+            showToast('Failed to export image', 'error');
+        }
+        console.error('Export error:', error);
+    }
 }
 
 /**
@@ -635,6 +670,15 @@ function resetLogoState() {
 
     if (logoOverlay) {
         logoOverlay.style.display = 'none';
+        // Remove any existing logo image from overlay
+        const existingImg = logoOverlay.querySelector('img');
+        if (existingImg) {
+            existingImg.remove();
+        }
+        // Reset transform and data attributes
+        logoOverlay.style.transform = '';
+        logoOverlay.removeAttribute('data-x');
+        logoOverlay.removeAttribute('data-y');
     }
 
     if (uploadZone) {

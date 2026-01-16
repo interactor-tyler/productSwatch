@@ -114,7 +114,8 @@
     background: var(--color-white);
     border-radius: 4px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+    /* overflow: visible to allow resize/rotate handles to show outside bounds */
+    overflow: visible;
 }
 
 #logo-editor-canvas {
@@ -126,10 +127,13 @@
 /* Logo overlay element for interact.js */
 .logo-overlay {
     position: absolute;
+    top: 0;
+    left: 0;
     touch-action: none;
     cursor: move;
     border: 2px dashed transparent;
     transition: border-color 0.2s ease;
+    box-sizing: border-box;
 }
 
 .logo-overlay:hover,
