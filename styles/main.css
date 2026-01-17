@@ -344,6 +344,13 @@ body {
     margin-top: 0.5rem;
 }
 
+.lightbox-sku {
+    font-family: var(--font-secondary);
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--color-white);
+}
+
 /* Lightbox close */
 .lightbox-close {
     position: absolute;

@@ -39,7 +39,7 @@ const editorState = {
 };
 
 // DOM Elements (initialized on DOMContentLoaded)
-let editorModal, editorCanvas, uploadZone, uploadInput, uploadError;
+let editorModal, editorCanvas, uploadZone, uploadRemove, uploadInput, uploadError;
 let downloadBtn, rotationSlider, rotationValue, logoOverlay, canvasWrapper;
 let sizeSlider, sizeValue, aspectRatioToggle, resetSizeBtn;
 let logoOpacitySlider, logoOpacityValue;
@@ -54,6 +54,7 @@ function initLogoEditor() {
     editorModal = document.getElementById('logo-editor');
     editorCanvas = document.getElementById('logo-editor-canvas');
     uploadZone = document.getElementById('logo-upload-zone');
+    uploadRemove = document.getElementById('logo-upload-remove');
     uploadInput = document.getElementById('logo-upload-input');
     uploadError = document.getElementById('logo-upload-error');
     downloadBtn = document.getElementById('logo-download-btn');
@@ -116,6 +117,9 @@ function setupEventListeners() {
 
     // File input change
     uploadInput?.addEventListener('change', handleFileSelect);
+
+    // File input remove/reset
+    uploadRemove?.addEventListener('click', handleFileRemove);
 
     // Drag and drop
     uploadZone?.addEventListener('dragover', handleDragOver);
@@ -531,6 +535,34 @@ function handleFileSelect(event) {
     if (file) {
         processLogoFile(file);
     }
+}
+
+/**
+ * Handle file remove/reset
+ */
+function handleFileRemove() {
+    if (!uploadZone || !logoOverlay) return;
+    
+    // Revert to initial upload message
+    uploadZone.classList.contains('has-logo') && uploadZone.classList.remove('has-logo');
+
+    // Remove preview image thumbnail
+    const previewImg = uploadZone.querySelector('.logo-preview-thumb');
+    if (previewImg) {
+        previewImg.src = '';
+    }
+
+    // Remove any existing logo image
+    const overlayImg = logoOverlay.querySelector('img');
+    if (overlayImg) {
+        overlayImg.remove();
+    }
+
+    logoOverlay.style.display = 'block';
+
+    resetLogoState();
+    renderCanvas();
+    updateDownloadButton();
 }
 
 /**
