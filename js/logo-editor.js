@@ -18,8 +18,19 @@ const editorState = {
         y: 50,
         width: 100,
         height: 100,
+        originalWidth: 100,
+        originalHeight: 100,
         rotation: 0,
-        scale: 1
+        scale: 1,
+        opacity: 1,
+        maintainAspectRatio: true
+    },
+    background: {
+        rotation: 0,
+        zoom: 1,
+        panX: 0,
+        panY: 0,
+        opacity: 1
     },
     canvas: null,
     ctx: null,
@@ -30,6 +41,11 @@ const editorState = {
 // DOM Elements (initialized on DOMContentLoaded)
 let editorModal, editorCanvas, uploadZone, uploadInput, uploadError;
 let downloadBtn, rotationSlider, rotationValue, logoOverlay, canvasWrapper;
+let sizeSlider, sizeValue, aspectRatioToggle, resetSizeBtn;
+let logoOpacitySlider, logoOpacityValue;
+let bgRotationSlider, bgRotationValue, bgZoomSlider, bgZoomValue;
+let bgOpacitySlider, bgOpacityValue;
+let bgPanXSlider, bgPanXValue, bgPanYSlider, bgPanYValue, bgPanControls, bgPanYControls, bgResetBtn;
 
 /**
  * Initialize the logo editor
@@ -45,6 +61,27 @@ function initLogoEditor() {
     rotationValue = document.getElementById('logo-rotation-value');
     logoOverlay = document.getElementById('logo-overlay');
     canvasWrapper = document.querySelector('.logo-editor-canvas-wrapper');
+
+    // New controls
+    sizeSlider = document.getElementById('logo-size');
+    sizeValue = document.getElementById('logo-size-value');
+    aspectRatioToggle = document.getElementById('logo-aspect-ratio');
+    resetSizeBtn = document.getElementById('logo-reset-size');
+    logoOpacitySlider = document.getElementById('logo-opacity');
+    logoOpacityValue = document.getElementById('logo-opacity-value');
+    bgRotationSlider = document.getElementById('bg-rotation');
+    bgRotationValue = document.getElementById('bg-rotation-value');
+    bgZoomSlider = document.getElementById('bg-zoom');
+    bgZoomValue = document.getElementById('bg-zoom-value');
+    bgOpacitySlider = document.getElementById('bg-opacity');
+    bgOpacityValue = document.getElementById('bg-opacity-value');
+    bgPanXSlider = document.getElementById('bg-pan-x');
+    bgPanXValue = document.getElementById('bg-pan-x-value');
+    bgPanYSlider = document.getElementById('bg-pan-y');
+    bgPanYValue = document.getElementById('bg-pan-y-value');
+    bgPanControls = document.getElementById('bg-pan-controls');
+    bgPanYControls = document.getElementById('bg-pan-y-controls');
+    bgResetBtn = document.getElementById('bg-reset');
 
     if (!editorModal || !editorCanvas) {
         console.warn('Logo editor elements not found');
@@ -85,8 +122,23 @@ function setupEventListeners() {
     uploadZone?.addEventListener('dragleave', handleDragLeave);
     uploadZone?.addEventListener('drop', handleDrop);
 
-    // Rotation slider
+    // Logo controls
     rotationSlider?.addEventListener('input', handleRotationChange);
+    sizeSlider?.addEventListener('input', handleSizeChange);
+    logoOpacitySlider?.addEventListener('input', handleLogoOpacityChange);
+    aspectRatioToggle?.addEventListener('change', handleAspectRatioToggle);
+    resetSizeBtn?.addEventListener('click', handleResetSize);
+
+    // Background controls
+    bgRotationSlider?.addEventListener('input', handleBgRotationChange);
+    bgZoomSlider?.addEventListener('input', handleBgZoomChange);
+    bgOpacitySlider?.addEventListener('input', handleBgOpacityChange);
+    bgPanXSlider?.addEventListener('input', handleBgPanXChange);
+    bgPanYSlider?.addEventListener('input', handleBgPanYChange);
+    bgResetBtn?.addEventListener('click', handleBgReset);
+
+    // Double-click to reset sliders to default values
+    setupSliderDoubleClickReset();
 
     // Keyboard events
     document.addEventListener('keydown', handleKeydown);
@@ -122,14 +174,17 @@ function setupInteract() {
         })
         .resizable({
             edges: { left: true, right: true, bottom: true, top: true },
-            preserveAspectRatio: true,
-            inertia: true,
             modifiers: [
+                interact.modifiers.aspectRatio({
+                    ratio: 'preserve',
+                    enabled: () => editorState.logo.maintainAspectRatio
+                }),
                 interact.modifiers.restrictSize({
                     min: { width: 30, height: 30 },
                     max: { width: 500, height: 500 }
                 })
             ],
+            inertia: true,
             listeners: {
                 move: resizeMoveListener,
                 end: updateCanvasFromOverlay
@@ -293,8 +348,8 @@ function openLogoEditor(productImageSrc) {
 
     // Load product image
     const img = new Image();
-    // Only set crossOrigin for local images, not external URLs
-    if (!productImageSrc.startsWith('http')) {
+    // Set crossOrigin for external URLs to enable canvas export
+    if (productImageSrc.startsWith('http')) {
         img.crossOrigin = 'anonymous';
     }
     img.onload = () => {
@@ -312,7 +367,8 @@ function openLogoEditor(productImageSrc) {
         renderCanvas();
         updateDownloadButton();
     };
-    img.onerror = () => {
+    img.onerror = (error) => {
+        console.error('Failed to load product image:', productImageSrc, error);
         showToast('Failed to load product image', 'error');
     };
     img.src = productImageSrc;
@@ -378,24 +434,54 @@ function setupCanvas() {
  */
 function renderCanvas() {
     const { ctx, canvas, productImage, logo } = editorState;
-    if (!ctx || !canvas || !productImage) return;
+    if (!ctx || !canvas || !productImage) {
+        return;
+    }
 
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Draw product image (base layer)
-    ctx.drawImage(productImage, 0, 0, canvas.width, canvas.height);
+    // Draw product image (base layer) with background transformations
+    ctx.save();
+
+    const bgRotation = editorState.background.rotation;
+    const bgZoom = editorState.background.zoom;
+    const bgPanX = editorState.background.panX;
+    const bgPanY = editorState.background.panY;
+    const bgOpacity = editorState.background.opacity;
+
+    // Apply background opacity
+    ctx.globalAlpha = bgOpacity;
+
+    // Move to canvas center for rotation and zoom
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    ctx.translate(centerX, centerY);
+    ctx.rotate(bgRotation * Math.PI / 180);
+    ctx.scale(bgZoom, bgZoom);
+
+    // Apply pan offset (scaled by canvas size for consistent behavior)
+    const panOffsetX = (bgPanX / 100) * canvas.width;
+    const panOffsetY = (bgPanY / 100) * canvas.height;
+
+    // Draw background image centered at origin with pan offset
+    ctx.drawImage(productImage, -canvas.width / 2 + panOffsetX, -canvas.height / 2 + panOffsetY, canvas.width, canvas.height);
+
+    ctx.restore();
 
     // Draw logo (overlay layer)
     if (logo.image) {
         ctx.save();
 
+        // Apply logo opacity
+        ctx.globalAlpha = logo.opacity;
+
         // Calculate center position
-        const centerX = logo.x + logo.width / 2;
-        const centerY = logo.y + logo.height / 2;
+        const logoCenterX = logo.x + logo.width / 2;
+        const logoCenterY = logo.y + logo.height / 2;
 
         // Move to logo center for rotation
-        ctx.translate(centerX, centerY);
+        ctx.translate(logoCenterX, logoCenterY);
         ctx.rotate(logo.rotation * Math.PI / 180);
 
         // Draw logo centered at origin
@@ -519,6 +605,8 @@ function processLogoFile(file) {
             // Center the logo
             editorState.logo.width = width;
             editorState.logo.height = height;
+            editorState.logo.originalWidth = width;
+            editorState.logo.originalHeight = height;
             editorState.logo.x = (editorState.canvasRect?.width || 300) / 2 - width / 2;
             editorState.logo.y = (editorState.canvasRect?.height || 300) / 2 - height / 2;
             editorState.logo.rotation = 0;
@@ -550,6 +638,7 @@ function processLogoFile(file) {
 
 /**
  * Update logo overlay element position and size
+ * Note: The overlay is just for interaction handles - the logo itself renders on canvas
  */
 function updateLogoOverlay() {
     if (!logoOverlay || !editorState.logo.image) return;
@@ -562,16 +651,11 @@ function updateLogoOverlay() {
     logoOverlay.setAttribute('data-x', x);
     logoOverlay.setAttribute('data-y', y);
 
-    // Update image inside overlay (reuse existing or create new)
-    let overlayImg = logoOverlay.querySelector('img');
-    if (!overlayImg) {
-        overlayImg = document.createElement('img');
-        overlayImg.alt = 'Logo overlay';
-        overlayImg.draggable = false;
-        // Insert at the beginning so resize handles stay on top
-        logoOverlay.insertBefore(overlayImg, logoOverlay.firstChild);
+    // Remove any existing logo image - we only want the interactive handles visible
+    const overlayImg = logoOverlay.querySelector('img');
+    if (overlayImg) {
+        overlayImg.remove();
     }
-    overlayImg.src = editorState.logo.image.src;
 
     logoOverlay.style.display = 'block';
 }
@@ -631,6 +715,228 @@ function handleRotationChange(event) {
 }
 
 /**
+ * Handle size slider change
+ */
+function handleSizeChange(event) {
+    const scale = parseInt(event.target.value, 10) / 100;
+
+    if (sizeValue) {
+        sizeValue.textContent = event.target.value + '%';
+    }
+
+    if (!editorState.logo.image) return;
+
+    const { originalWidth, originalHeight } = editorState.logo;
+    editorState.logo.width = originalWidth * scale;
+    editorState.logo.height = originalHeight * scale;
+
+    updateLogoOverlay();
+    renderCanvas();
+}
+
+/**
+ * Handle aspect ratio toggle
+ */
+function handleAspectRatioToggle(event) {
+    editorState.logo.maintainAspectRatio = event.target.checked;
+}
+
+/**
+ * Handle reset size button
+ */
+function handleResetSize() {
+    if (!editorState.logo.image) return;
+
+    const { originalWidth, originalHeight } = editorState.logo;
+    editorState.logo.width = originalWidth;
+    editorState.logo.height = originalHeight;
+
+    if (sizeSlider) {
+        sizeSlider.value = 100;
+    }
+    if (sizeValue) {
+        sizeValue.textContent = '100%';
+    }
+
+    updateLogoOverlay();
+    renderCanvas();
+}
+
+/**
+ * Handle background rotation change
+ */
+function handleBgRotationChange(event) {
+    const rotation = parseInt(event.target.value, 10);
+    editorState.background.rotation = rotation;
+
+    if (bgRotationValue) {
+        bgRotationValue.textContent = rotation + '°';
+    }
+
+    renderCanvas();
+}
+
+/**
+ * Handle background zoom change
+ */
+function handleBgZoomChange(event) {
+    const zoom = parseInt(event.target.value, 10) / 100;
+    editorState.background.zoom = zoom;
+
+    if (bgZoomValue) {
+        bgZoomValue.textContent = event.target.value + '%';
+    }
+
+    // Enable/disable pan controls based on zoom level
+    const enablePan = zoom > 1;
+    if (bgPanXSlider) {
+        bgPanXSlider.disabled = !enablePan;
+    }
+    if (bgPanYSlider) {
+        bgPanYSlider.disabled = !enablePan;
+    }
+    if (bgPanControls) {
+        bgPanControls.classList.toggle('disabled', !enablePan);
+    }
+    if (bgPanYControls) {
+        bgPanYControls.classList.toggle('disabled', !enablePan);
+    }
+
+    // Update pan slider ranges based on zoom
+    updatePanSliderRanges(zoom);
+
+    renderCanvas();
+}
+
+/**
+ * Handle background opacity change
+ */
+function handleBgOpacityChange(event) {
+    const opacity = parseInt(event.target.value, 10) / 100;
+    editorState.background.opacity = opacity;
+
+    if (bgOpacityValue) {
+        bgOpacityValue.textContent = event.target.value + '%';
+    }
+
+    renderCanvas();
+}
+
+/**
+ * Handle logo opacity change
+ */
+function handleLogoOpacityChange(event) {
+    const opacity = parseInt(event.target.value, 10) / 100;
+    editorState.logo.opacity = opacity;
+
+    if (logoOpacityValue) {
+        logoOpacityValue.textContent = event.target.value + '%';
+    }
+
+    renderCanvas();
+}
+
+/**
+ * Update pan slider ranges based on zoom level
+ */
+function updatePanSliderRanges(zoom) {
+    // Pan range increases with zoom - at 500% we can pan much further
+    const maxPan = Math.round((zoom - 1) * 100);
+
+    if (bgPanXSlider) {
+        bgPanXSlider.min = -maxPan;
+        bgPanXSlider.max = maxPan;
+    }
+    if (bgPanYSlider) {
+        bgPanYSlider.min = -maxPan;
+        bgPanYSlider.max = maxPan;
+    }
+}
+
+/**
+ * Handle background pan X change
+ */
+function handleBgPanXChange(event) {
+    const panX = parseInt(event.target.value, 10);
+    editorState.background.panX = panX;
+
+    if (bgPanXValue) {
+        bgPanXValue.textContent = panX;
+    }
+
+    renderCanvas();
+}
+
+/**
+ * Handle background pan Y change
+ */
+function handleBgPanYChange(event) {
+    const panY = parseInt(event.target.value, 10);
+    editorState.background.panY = panY;
+
+    if (bgPanYValue) {
+        bgPanYValue.textContent = panY;
+    }
+
+    renderCanvas();
+}
+
+/**
+ * Handle background reset button
+ */
+function handleBgReset() {
+    editorState.background.rotation = 0;
+    editorState.background.zoom = 1;
+    editorState.background.panX = 0;
+    editorState.background.panY = 0;
+    editorState.background.opacity = 1;
+
+    // Reset all background controls
+    if (bgRotationSlider) {
+        bgRotationSlider.value = 0;
+    }
+    if (bgRotationValue) {
+        bgRotationValue.textContent = '0°';
+    }
+    if (bgZoomSlider) {
+        bgZoomSlider.value = 100;
+    }
+    if (bgZoomValue) {
+        bgZoomValue.textContent = '100%';
+    }
+    if (bgOpacitySlider) {
+        bgOpacitySlider.value = 100;
+    }
+    if (bgOpacityValue) {
+        bgOpacityValue.textContent = '100%';
+    }
+    if (bgPanXSlider) {
+        bgPanXSlider.value = 0;
+        bgPanXSlider.disabled = true;
+    }
+    if (bgPanXValue) {
+        bgPanXValue.textContent = '0';
+    }
+    if (bgPanYSlider) {
+        bgPanYSlider.value = 0;
+        bgPanYSlider.disabled = true;
+    }
+    if (bgPanYValue) {
+        bgPanYValue.textContent = '0';
+    }
+
+    // Mark pan controls as disabled
+    if (bgPanControls) {
+        bgPanControls.classList.add('disabled');
+    }
+    if (bgPanYControls) {
+        bgPanYControls.classList.add('disabled');
+    }
+
+    renderCanvas();
+}
+
+/**
  * Handle keyboard events
  */
 function handleKeydown(event) {
@@ -683,13 +989,41 @@ function exportAsJPG() {
         const scaleX = img.width / editorState.canvasRect.width;
         const scaleY = img.height / editorState.canvasRect.height;
 
-        // Draw product image at full resolution
-        exportCtx.drawImage(img, 0, 0, img.width, img.height);
+        // Draw product image at full resolution with background transformations
+        exportCtx.save();
+
+        const bgRotation = editorState.background.rotation;
+        const bgZoom = editorState.background.zoom;
+        const bgPanX = editorState.background.panX;
+        const bgPanY = editorState.background.panY;
+        const bgOpacity = editorState.background.opacity;
+
+        // Apply background opacity
+        exportCtx.globalAlpha = bgOpacity;
+
+        // Move to canvas center for rotation and zoom
+        const bgCenterX = img.width / 2;
+        const bgCenterY = img.height / 2;
+        exportCtx.translate(bgCenterX, bgCenterY);
+        exportCtx.rotate(bgRotation * Math.PI / 180);
+        exportCtx.scale(bgZoom, bgZoom);
+
+        // Apply pan offset (scaled by image size for consistent behavior)
+        const panOffsetX = (bgPanX / 100) * img.width;
+        const panOffsetY = (bgPanY / 100) * img.height;
+
+        // Draw background image centered at origin with pan offset
+        exportCtx.drawImage(img, -img.width / 2 + panOffsetX, -img.height / 2 + panOffsetY, img.width, img.height);
+
+        exportCtx.restore();
 
         // Draw logo at scaled position
         const logo = editorState.logo;
         if (logo.image) {
             exportCtx.save();
+
+            // Apply logo opacity
+            exportCtx.globalAlpha = logo.opacity;
 
             const scaledX = logo.x * scaleX;
             const scaledY = logo.y * scaleY;
@@ -713,6 +1047,26 @@ function exportAsJPG() {
             exportCtx.restore();
         }
 
+        // Test if canvas is tainted before calling toBlob
+        // This will throw SecurityError if canvas is tainted
+        try {
+            exportCanvas.toDataURL();
+        } catch (testError) {
+            if (testError.name === 'SecurityError') {
+                // Canvas is tainted - this happens with:
+                // 1. External images without CORS headers (like placeholder images)
+                // 2. Local files when opened via file:// protocol
+                const isExternal = editorState.productImageSrc?.startsWith('http');
+                const errorMsg = isExternal
+                    ? 'Cannot export: external placeholder images do not support export. Select a real product color.'
+                    : 'Cannot export: please run on a web server (not file://)';
+                showToast(errorMsg, 'error');
+                console.error('Canvas is tainted - CORS issue with product image:', editorState.productImageSrc);
+                return;
+            }
+            throw testError;
+        }
+
         // Convert to blob and download
         exportCanvas.toBlob((blob) => {
             if (!blob) {
@@ -723,7 +1077,9 @@ function exportAsJPG() {
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `${product?.title || 'product'}-with-logo.jpg`.replace(/\s+/g, '-').toLowerCase();
+            // Get product title from main.js if available, or use default
+            const productTitle = (typeof product !== 'undefined' && product?.title) ? product.title : 'product';
+            link.download = `${productTitle}-with-logo.jpg`.replace(/\s+/g, '-').toLowerCase();
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -734,7 +1090,11 @@ function exportAsJPG() {
     } catch (error) {
         // Handle tainted canvas error (CORS issue with external images)
         if (error.name === 'SecurityError') {
-            showToast('Cannot export: please use a product with a local image', 'error');
+            const isExternal = editorState.productImageSrc?.startsWith('http');
+            const errorMsg = isExternal
+                ? 'Cannot export: external placeholder images do not support export. Select a real product color.'
+                : 'Cannot export: please run on a web server (not file://)';
+            showToast(errorMsg, 'error');
         } else {
             showToast('Failed to export image', 'error');
         }
@@ -753,8 +1113,12 @@ function resetLogoState() {
         y: 50,
         width: 100,
         height: 100,
+        originalWidth: 100,
+        originalHeight: 100,
         rotation: 0,
-        scale: 1
+        scale: 1,
+        opacity: 1,
+        maintainAspectRatio: true
     };
 
     if (logoOverlay) {
@@ -778,12 +1142,27 @@ function resetLogoState() {
         uploadInput.value = '';
     }
 
+    // Reset all controls
     if (rotationSlider) {
         rotationSlider.value = 0;
     }
-
     if (rotationValue) {
         rotationValue.textContent = '0°';
+    }
+    if (sizeSlider) {
+        sizeSlider.value = 100;
+    }
+    if (sizeValue) {
+        sizeValue.textContent = '100%';
+    }
+    if (logoOpacitySlider) {
+        logoOpacitySlider.value = 100;
+    }
+    if (logoOpacityValue) {
+        logoOpacityValue.textContent = '100%';
+    }
+    if (aspectRatioToggle) {
+        aspectRatioToggle.checked = true;
     }
 }
 
@@ -810,6 +1189,124 @@ function showToast(message, type = 'info') {
     setTimeout(() => {
         toast.classList.remove('active');
     }, 3000);
+}
+
+/**
+ * Setup double-click to reset sliders to default values
+ */
+function setupSliderDoubleClickReset() {
+    // Define slider configurations with their default values and reset handlers
+    const sliderConfigs = [
+        {
+            slider: sizeSlider,
+            valueDisplay: sizeValue,
+            defaultValue: 100,
+            suffix: '%',
+            onReset: () => {
+                editorState.logo.width = editorState.logo.originalWidth;
+                editorState.logo.height = editorState.logo.originalHeight;
+                updateLogoOverlay();
+                renderCanvas();
+            }
+        },
+        {
+            slider: rotationSlider,
+            valueDisplay: rotationValue,
+            defaultValue: 0,
+            suffix: '°',
+            onReset: () => {
+                editorState.logo.rotation = 0;
+                if (logoOverlay && editorState.logo.image) {
+                    const { x, y } = editorState.logo;
+                    logoOverlay.style.transform = `translate(${x}px, ${y}px) rotate(0deg)`;
+                }
+                renderCanvas();
+            }
+        },
+        {
+            slider: logoOpacitySlider,
+            valueDisplay: logoOpacityValue,
+            defaultValue: 100,
+            suffix: '%',
+            onReset: () => {
+                editorState.logo.opacity = 1;
+                renderCanvas();
+            }
+        },
+        {
+            slider: bgRotationSlider,
+            valueDisplay: bgRotationValue,
+            defaultValue: 0,
+            suffix: '°',
+            onReset: () => {
+                editorState.background.rotation = 0;
+                renderCanvas();
+            }
+        },
+        {
+            slider: bgZoomSlider,
+            valueDisplay: bgZoomValue,
+            defaultValue: 100,
+            suffix: '%',
+            onReset: () => {
+                editorState.background.zoom = 1;
+                // Disable pan controls when zoom resets to 100%
+                if (bgPanXSlider) bgPanXSlider.disabled = true;
+                if (bgPanYSlider) bgPanYSlider.disabled = true;
+                if (bgPanControls) bgPanControls.classList.add('disabled');
+                if (bgPanYControls) bgPanYControls.classList.add('disabled');
+                renderCanvas();
+            }
+        },
+        {
+            slider: bgOpacitySlider,
+            valueDisplay: bgOpacityValue,
+            defaultValue: 100,
+            suffix: '%',
+            onReset: () => {
+                editorState.background.opacity = 1;
+                renderCanvas();
+            }
+        },
+        {
+            slider: bgPanXSlider,
+            valueDisplay: bgPanXValue,
+            defaultValue: 0,
+            suffix: '',
+            onReset: () => {
+                editorState.background.panX = 0;
+                renderCanvas();
+            }
+        },
+        {
+            slider: bgPanYSlider,
+            valueDisplay: bgPanYValue,
+            defaultValue: 0,
+            suffix: '',
+            onReset: () => {
+                editorState.background.panY = 0;
+                renderCanvas();
+            }
+        }
+    ];
+
+    // Add double-click listeners to each slider
+    sliderConfigs.forEach(config => {
+        if (!config.slider) return;
+
+        config.slider.addEventListener('dblclick', () => {
+            // Reset the slider value
+            config.slider.value = config.defaultValue;
+
+            // Update the display value
+            if (config.valueDisplay) {
+                config.valueDisplay.textContent = config.defaultValue + config.suffix;
+            }
+
+            // Call the reset handler
+            config.onReset();
+        });
+    });
 }
 
 /**

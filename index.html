@@ -125,13 +125,89 @@
                     </div>
 
                     <div class="logo-editor-section">
-                        <h3 class="logo-editor-section-title">Controls</h3>
+                        <h3 class="logo-editor-section-title">Logo Controls</h3>
+
+                        <div class="logo-control-group">
+                            <label class="logo-control-label">
+                                Size
+                                <span class="logo-control-value" id="logo-size-value">100%</span>
+                            </label>
+                            <input type="range" class="logo-control-slider" id="logo-size" min="10" max="300" value="100">
+                        </div>
+
                         <div class="logo-control-group">
                             <label class="logo-control-label">
                                 Rotation
                                 <span class="logo-control-value" id="logo-rotation-value">0°</span>
                             </label>
                             <input type="range" class="logo-control-slider" id="logo-rotation" min="-180" max="180" value="0">
+                        </div>
+
+                        <div class="logo-control-group">
+                            <label class="logo-control-label">
+                                Opacity
+                                <span class="logo-control-value" id="logo-opacity-value">100%</span>
+                            </label>
+                            <input type="range" class="logo-control-slider" id="logo-opacity" min="0" max="100" value="100">
+                        </div>
+
+                        <div class="logo-control-group">
+                            <label class="logo-control-checkbox">
+                                <input type="checkbox" id="logo-aspect-ratio" checked>
+                                <span>Lock Aspect Ratio</span>
+                            </label>
+                        </div>
+
+                        <div class="logo-control-group">
+                            <button class="logo-control-btn" id="logo-reset-size">Reset to Original Size</button>
+                        </div>
+                    </div>
+
+                    <div class="logo-editor-section">
+                        <h3 class="logo-editor-section-title">Background Controls</h3>
+
+                        <div class="logo-control-group">
+                            <label class="logo-control-label">
+                                Rotation
+                                <span class="logo-control-value" id="bg-rotation-value">0°</span>
+                            </label>
+                            <input type="range" class="logo-control-slider" id="bg-rotation" min="-180" max="180" value="0">
+                        </div>
+
+                        <div class="logo-control-group">
+                            <label class="logo-control-label">
+                                Zoom
+                                <span class="logo-control-value" id="bg-zoom-value">100%</span>
+                            </label>
+                            <input type="range" class="logo-control-slider" id="bg-zoom" min="50" max="500" value="100">
+                        </div>
+
+                        <div class="logo-control-group">
+                            <label class="logo-control-label">
+                                Opacity
+                                <span class="logo-control-value" id="bg-opacity-value">100%</span>
+                            </label>
+                            <input type="range" class="logo-control-slider" id="bg-opacity" min="0" max="100" value="100">
+                        </div>
+
+                        <div class="logo-control-group" id="bg-pan-controls">
+                            <label class="logo-control-label">
+                                Pan X
+                                <span class="logo-control-value" id="bg-pan-x-value">0</span>
+                            </label>
+                            <input type="range" class="logo-control-slider" id="bg-pan-x" min="-100" max="100" value="0" disabled>
+                        </div>
+
+                        <div class="logo-control-group" id="bg-pan-y-controls">
+                            <label class="logo-control-label">
+                                Pan Y
+                                <span class="logo-control-value" id="bg-pan-y-value">0</span>
+                            </label>
+                            <input type="range" class="logo-control-slider" id="bg-pan-y" min="-100" max="100" value="0" disabled>
+                        </div>
+
+                        <div class="logo-control-group">
+                            <button class="logo-control-btn" id="bg-reset">Reset Background</button>
                         </div>
                     </div>
 

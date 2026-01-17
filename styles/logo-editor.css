@@ -125,6 +125,7 @@
 }
 
 /* Logo overlay element for interact.js */
+/* This is a transparent interactive region - the logo renders on canvas below */
 .logo-overlay {
     position: absolute;
     top: 0;
@@ -134,11 +135,17 @@
     border: 2px dashed transparent;
     transition: border-color 0.2s ease;
     box-sizing: border-box;
+    background: transparent;
+    pointer-events: auto;
+    /* Minimum touch/click target for small logos */
+    min-width: 44px;
+    min-height: 44px;
 }
 
 .logo-overlay:hover,
 .logo-overlay.active {
     border-color: var(--color-primary);
+    background: rgba(126, 188, 89, 0.1);
 }
 
 .logo-overlay img {
@@ -240,6 +247,8 @@
     display: flex;
     flex-direction: column;
     background: var(--color-white);
+    overflow-y: auto;
+    max-height: 100%;
 }
 
 .logo-editor-section {
@@ -419,6 +428,70 @@
     border: none;
     border-radius: 50%;
     cursor: pointer;
+}
+
+/* Disabled slider state */
+.logo-control-slider:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.logo-control-slider:disabled::-webkit-slider-thumb {
+    background: var(--color-mid-gray);
+    cursor: not-allowed;
+}
+
+.logo-control-slider:disabled::-moz-range-thumb {
+    background: var(--color-mid-gray);
+    cursor: not-allowed;
+}
+
+.logo-control-group.disabled .logo-control-label {
+    opacity: 0.5;
+}
+
+/* Checkbox Control */
+.logo-control-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-secondary);
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--color-text);
+    cursor: pointer;
+}
+
+.logo-control-checkbox input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--color-primary);
+}
+
+/* Button Control */
+.logo-control-btn {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-family: var(--font-secondary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.logo-control-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: rgba(126, 188, 89, 0.05);
+}
+
+.logo-control-btn:active {
+    transform: scale(0.98);
 }
 
 /* Editor Footer */
