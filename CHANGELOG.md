@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/interactor-tyler/productSwatch/compare/v1.3.0...v1.4.0) (2026-01-17)
+
+
+### Features
+
+* implement logo overlay editor with full controls ([4c5a156](https://github.com/interactor-tyler/productSwatch/commit/4c5a156134ce5631290310304137486f7c80555d))
+
 ## [1.3.0](https://github.com/interactor-tyler/productSwatch/compare/v1.2.0...v1.3.0) (2026-01-16)
 
 
